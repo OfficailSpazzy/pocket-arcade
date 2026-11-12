@@ -244,6 +244,15 @@ canvas.cv{border-radius:4px;border-color:#222}
 .gpanel .tog{box-shadow:0 0 0 2px #55535c}
 .gmeta{font:400 7px/1.6 "Press Start 2P",monospace;color:#6f6a62;text-align:center;letter-spacing:.08em}
 @keyframes blink{50%{opacity:.25}}
+.dmenu{display:flex;flex-direction:column;align-items:stretch;gap:12px;width:100%;max-width:320px;margin-top:6px}
+.dtitle{margin:0 0 4px;text-align:center;font:400 12px/1.4 "Press Start 2P",monospace;color:#ffd23f}
+.ditem{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:13px 12px 13px 36px;background:#000;border:2px solid #2a2a2e;border-radius:0;color:#f4f4f4;cursor:pointer;text-align:left}
+.ditem .dname{font:400 14px/1 "Press Start 2P",monospace;color:var(--dc)}
+.ditem .ddesc{font:400 7px/1.4 "Press Start 2P",monospace;color:#a9a39a}
+.ditem .dbest{font:400 7px/1 "Press Start 2P",monospace;color:#f4f4f4}
+.ditem.on{border-color:var(--dc);box-shadow:3px 3px 0 var(--dc)}
+.ditem.on::before{content:"\25B6";position:absolute;left:11px;top:13px;font:400 12px/1 "Press Start 2P",monospace;color:var(--dc);animation:blink .8s steps(2) infinite}
+.dhint{margin:4px 0 0;text-align:center;font:400 7px/1.5 "Press Start 2P",monospace;color:#6f6a62}
 @media (max-height:700px){.gmarq{padding:3px 6px 7px}.gmarq span{font-size:14px}.gbez{padding:10px 10px 8px}.gpanel{padding:11px 14px 6px}.gpanel #back{width:34px;height:34px}#help{font-size:7px}}
 </style>
 </head>
@@ -301,6 +310,7 @@ canvas.cv{border-radius:4px;border-color:#222}
               <p id="oscore"></p>
               <p id="onew">New hi-score!</p>
               <button class="btn pri" id="again" type="button">Play again</button>
+              <button class="btn" id="odiff" type="button" hidden>Change difficulty</button>
               <button class="btn" id="quit" type="button">Exit to arcade</button>
             </div>
           </div>
