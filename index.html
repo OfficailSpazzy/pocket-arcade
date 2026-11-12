@@ -565,10 +565,10 @@ reg('dodge','Dodge','Arcade','Drag or use the arrow keys. A meteor storm is comi
     g.restore();g.fillStyle='rgba(255,255,255,.85)';g.font='400 30px "Bungee",Impact,sans-serif';g.textAlign='center';g.fillText(Math.floor(time),W/2,46)});
 },{sl:'Seconds'});
 
-reg('runner','Runner','Arcade','Tap or press space to jump the cacti. It keeps getting faster.',ctx=>{
+reg('runner','Runner','Arcade','Tap anywhere on the screen, or press space, to jump the cacti. It keeps getting faster.',ctx=>{
   const W=400,H=200,GY=160,{cv,g}=ctx.canvas(W,H);let y=GY,vy=0,obs=[],t=1,dist=0,run=0,parts=[],dead=0,mile=1,air=false;
   const stars=Array.from({length:40},()=>({x:R(W),y:R(110),s:Math.random()}));
-  const jump=()=>{if(dead)return;if(y>=GY){vy=-580;air=true;beep(300,.12,'square',.04,0,620)}};ctx.on(cv,'pointerdown',e=>{e.preventDefault();jump()});ctx.keys(k=>{if(k==='space'||k==='up')jump()});
+  const jump=()=>{if(dead)return;if(y>=GY){vy=-580;air=true;beep(300,.12,'square',.04,0,620)}};ctx.on(window,'pointerdown',e=>{if(e.target.closest&&e.target.closest('#bar,#over,button,a,input'))return;if(e.cancelable)e.preventDefault();jump()},{passive:false});ctx.keys(k=>{if(k==='space'||k==='up')jump()});
   const cactus=o=>{const x=o.x,w=o.w,h=o.h;g.fillStyle='#2f9e5a';rrect(g,x+w*.3,GY-h,w*.4,h,4);g.fill();if(h>28){rrect(g,x,GY-h*.7,w*.3,4,2);g.fill();rrect(g,x,GY-h*.85,4,h*.2,2);g.fill();rrect(g,x+w*.7,GY-h*.55,w*.3,4,2);g.fill();rrect(g,x+w-4,GY-h*.72,4,h*.2,2);g.fill()}
     g.fillStyle='rgba(255,255,255,.18)';g.fillRect(x+w*.38,GY-h+3,2,h-6)};
   const runner=(x,yy)=>{const ph=air?0:Math.sin(run*18);g.fillStyle='#ffd84a';rrect(g,x-11,yy-30,22,20,6);g.fill();g.fillStyle='#1b1326';g.fillRect(x+3,yy-25,3,3);g.fillStyle='#ff9f43';g.fillRect(x+7,yy-20,6,3);
