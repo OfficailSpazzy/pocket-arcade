@@ -52,14 +52,24 @@ const sfxOn=()=>{beep(70,.35,'sawtooth',.05,0,900);noise(.3,.06,.05,5000)};
 const sfxSelect=()=>{[523,659,784,1047,784,1047,1319].forEach((f,i)=>beep(f,.085,'square',.045,.18+i*.075))};
 const sfxCoinFly=()=>{beep(2093,.04,'square',.025);beep(2637,.04,'square',.02,.25);beep(2093,.04,'square',.02,.5);beep(2637,.04,'square',.018,.72)};
 const sfxCoinIn=()=>{noise(.06,.18,0,1800);beep(170,.07,'square',.06,0,90);beep(988,.07,'square',.05,.08);beep(1319,.34,'square',.05,.15)};
-function coinDrop(done){const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,cab=$id('cab'),slot=cab.querySelector('.coin .slot'),st=$id('start'),lab=cab.querySelector('.coin span');
-  const fin=()=>{slot.classList.remove('hit');void slot.offsetWidth;slot.classList.add('hit');sfxCoinIn();lab.textContent='CREDIT 01';lab.classList.add('credit');done()};
+function coinDrop(done){const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,cab=$id('cab'),bars=[...cab.querySelectorAll('.coin .slot')],st=$id('start'),lab=cab.querySelector('.coin span');
+  const fin=()=>{bars.forEach(b=>{b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit')});sfxCoinIn();lab.style.opacity='';lab.textContent='CREDIT 01';lab.classList.add('credit');done()};
   if(reduce||!cab.animate){fin();return}
-  const c=cab.getBoundingClientRect(),a=st.getBoundingClientRect(),b=slot.getBoundingClientRect();const ax=a.left-c.left+a.width/2,ay=a.top-c.top+a.height/2,bx=b.left-c.left+b.width/2,by=b.top-c.top+b.height/2;
-  const coin=$('div','coinfx',cab);$('i','',coin,'S');const T=(x,y,s,sy)=>`translate(${x}px,${y}px) scale(${s},${sy==null?s:sy})`;
-  const mx=(ax+bx)/2,peak=Math.min(ay,by)-90;sfxCoinFly();
-  const an=coin.animate([{transform:T(ax,ay,.3),opacity:0},{transform:T(ax,ay-40,1.1),opacity:1,offset:.12},{transform:T(mx,peak,1.3),opacity:1,offset:.45},{transform:T(bx,by-38,1),opacity:1,offset:.76},{transform:T(bx,by-8,.9,1),opacity:1,offset:.9},{transform:T(bx,by+8,.15,.85),opacity:0}],{duration:1000,easing:'cubic-bezier(.35,0,.65,1)',fill:'forwards'});
-  an.onfinish=()=>{coin.remove();fin()};setTimeout(()=>{if(coin.isConnected){coin.remove();fin()}},1700)}
+  const c=cab.getBoundingClientRect(),a=st.getBoundingClientRect(),l=bars[0].getBoundingClientRect(),r=bars[bars.length-1].getBoundingClientRect();
+  const ax=a.left-c.left+a.width/2,ay=a.top-c.top+a.height/2,bx=(l.left+l.width/2+r.left+r.width/2)/2-c.left,by=l.top-c.top+l.height/2;
+  const coin=$('div','coinfx',cab),face=$('i','',coin,'S');const T=(x,y,sx,sy)=>`translate(${x}px,${y}px) scale(${sx},${sy==null?sx:sy})`;
+  const mx=(ax+bx)/2,peak=Math.min(ay,by)-90,D=1100;sfxCoinFly();
+  const an=coin.animate([
+    {transform:T(ax,ay,.3),opacity:0,clipPath:'inset(0 0 0 0)'},
+    {transform:T(ax,ay-40,1.1),opacity:1,clipPath:'inset(0 0 0 0)',offset:.12},
+    {transform:T(mx,peak,1.3),opacity:1,clipPath:'inset(0 0 0 0)',offset:.45},
+    {transform:T(bx,by-46,1),opacity:1,clipPath:'inset(0 0 0 0)',offset:.68},
+    {transform:T(bx,by-18,.12,1),opacity:1,clipPath:'inset(0 0 0 0)',offset:.8},
+    {transform:T(bx,by+18,.12,1),opacity:1,clipPath:'inset(0 0 100% 0)'}],{duration:D,easing:'cubic-bezier(.35,0,.65,1)',fill:'forwards'});
+  ctx_t(()=>{face.style.animation='none';face.style.transform='scaleX(1)';lab.style.transition='opacity .12s';lab.style.opacity='0'},D*.66);
+  ctx_t(()=>{beep(1760,.03,'square',.03)},D*.8);
+  an.onfinish=()=>{coin.remove();fin()};ctx_t(()=>{if(coin.isConnected){coin.remove();fin()}},D+600)}
+const ctx_t=(f,ms)=>setTimeout(f,ms);
 function led(){const L=$id('led');L.classList.toggle('typing',!!typed);L.textContent=typed?(typed.length===1?typed+'_':typed):pad2(sel+1)}
 function announce(){$id('sr').textContent='Game '+(sel+1)+' of '+NG+': '+GAMES[sel].name+', '+GAMES[sel].cat}
 function press(b){if(!b)return;b.classList.add('down');setTimeout(()=>b.classList.remove('down'),110)}
