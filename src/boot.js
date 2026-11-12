@@ -10,7 +10,9 @@ function show(id){const gm=GAMES.find(x=>x.id===id);shown=gm?id:'';if(gm)play(gm
 function nav(id){try{if(id)location.hash=id;else history.replaceState(null,'',location.pathname+location.search)}catch(e){try{location.hash=id||''}catch(e2){}}show(id)}
 function boot(){el.tag.textContent=GAMES.length+' games in one app. Pick a cartridge and play, on your phone or at a keyboard.';
   ['All',...CATS].forEach(c=>{const b=$('button','chip',el.chips,c);b.setAttribute('aria-pressed',c===filt);b.addEventListener('click',()=>{filt=c;[...el.chips.children].forEach(x=>x.setAttribute('aria-pressed',x===b));renderShelf()})});
-  el.q.addEventListener('input',renderShelf);el.rand.addEventListener('click',()=>nav(GAMES[R(GAMES.length)].id));
+  el.q.addEventListener('input',renderShelf);
+  const ms=()=>{el.mute.innerHTML=MUTED?'&#128263;':'&#128266;';el.mute.setAttribute('aria-label',MUTED?'Sound off':'Sound on')};ms();
+  el.mute.addEventListener('click',()=>{MUTED=!MUTED;store.set('mute',MUTED);ms();if(!MUTED){unlockAudio();setTimeout(()=>SFX.tap(),30)}});el.rand.addEventListener('click',()=>nav(GAMES[R(GAMES.length)].id));
   el.back.addEventListener('click',()=>nav(''));el.quit.addEventListener('click',()=>nav(''));el.again.addEventListener('click',()=>{if(cur)play(cur.game)});
   window.addEventListener('hashchange',()=>{const id=location.hash.slice(1);if(id!==shown)show(id)});
   show(location.hash.slice(1))}

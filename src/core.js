@@ -11,14 +11,25 @@ const CATS=['Arcade','Puzzle','Board','Words & Math','Cards & Reflex'];
 const CATVAR={'Arcade':'--arc','Puzzle':'--puz','Board':'--brd','Words & Math':'--wrd','Cards & Reflex':'--crd'};
 const GAMES=[];
 const reg=(id,name,cat,help,fn,opt)=>GAMES.push(Object.assign({id,name,cat,help,fn},opt||{}));
-const el={};['home','game','bar','gname','score','best','slab','sbox','bbox','help','info','clock','stage','over','omsg','oscore','onew','again','quit','back','shelf','chips','q','rand','tag','wrap'].forEach(i=>el[i]=document.getElementById(i));
+const el={};['home','game','bar','gname','score','best','slab','sbox','bbox','help','info','clock','stage','over','omsg','oscore','onew','again','quit','back','mute','shelf','chips','q','rand','tag','wrap'].forEach(i=>el[i]=document.getElementById(i));
 const KEYMAP={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'space',Enter:'enter',Backspace:'back'};
 let cur=null;
+const noise=(dur=.15,vol=.08,when=0,hp=800)=>{if(MUTED||!AC||AC.state!=='running')return;try{const n=Math.floor(AC.sampleRate*dur),buf=AC.createBuffer(1,n,AC.sampleRate),d=buf.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+  const s=AC.createBufferSource(),f=AC.createBiquadFilter(),gn=AC.createGain(),t=AC.currentTime+when;s.buffer=buf;f.type='bandpass';f.frequency.value=hp;gn.gain.value=vol;s.connect(f);f.connect(gn);gn.connect(AC.destination);s.start(t)}catch(e){}};
+const SFX={tap:()=>beep(620,.04,'square',.03),tick:()=>beep(900,.025,'square',.025),ok:()=>{beep(660,.06,'square',.045);beep(990,.09,'square',.045,.06)},bad:()=>beep(150,.18,'sawtooth',.05,0,90),
+  pop:(n=0)=>beep(400+n*60,.06,'square',.045,0,800+n*80),flip:()=>noise(.05,.12,0,2500),card:()=>noise(.07,.14,0,3200),thud:()=>beep(120,.09,'triangle',.12,0,60),
+  win:()=>[523,659,784,1047,1319].forEach((f,i)=>beep(f,.12,'square',.05,i*.09)),lose:()=>{beep(330,.18,'square',.05);beep(247,.18,'square',.05,.18);beep(165,.4,'sawtooth',.05,.36,90)},
+  end:()=>{beep(523,.1,'square',.05);beep(392,.18,'square',.05,.1)},boom:()=>{noise(.5,.25,0,300);beep(90,.45,'sawtooth',.06,0,30)}};
+function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const cv=document.createElement('canvas');cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50';document.body.appendChild(cv);
+  const w=cv.width=innerWidth,h=cv.height=innerHeight,g=cv.getContext('2d'),ps=Array.from({length:110},()=>({x:w/2+(Math.random()-.5)*w*.4,y:h*.35,vx:(Math.random()-.5)*9,vy:-Math.random()*11-3,r:Math.random()*6,c:PAL[R(PAL.length)],s:4+Math.random()*5}));let t0=performance.now();
+  const f=t=>{const k=(t-t0)/1000;g.clearRect(0,0,w,h);ps.forEach(p=>{p.vy+=.32;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=.15;g.save();g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.globalAlpha=Math.max(0,1-k/2.4);g.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);g.restore()});if(k<2.4)requestAnimationFrame(f);else cv.remove()};requestAnimationFrame(f)}
+const anim=(e,c)=>{if(!e)return;e.classList.remove(c);void e.offsetWidth;e.classList.add(c)};
 /* sound: tiny synth beeps. Browsers only allow audio after a tap or key press, so unlock on the first one. */
 let AC=null;
 const unlockAudio=()=>{try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}};
 ['pointerdown','touchend','click','keydown'].forEach(ev=>window.addEventListener(ev,unlockAudio,true));
-const beep=(f,dur=.08,type='square',vol=.06,when=0,f2)=>{if(!AC||AC.state!=='running')return;try{const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+when;o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur+.02)}catch(e){}};
+let MUTED=!!store.get('mute');
+const beep=(f,dur=.08,type='square',vol=.06,when=0,f2)=>{if(MUTED||!AC||AC.state!=='running')return;try{const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+when;o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur+.02)}catch(e){}};
 
 function makeCtx(game){
   const stage=el.stage,cleanups=[];
@@ -49,7 +60,7 @@ function makeCtx(game){
     btn(p,label,fn,cls){const b=$('button','btn'+(cls?' '+cls:''),p,label);ctx.on(b,'click',()=>{if(!ctx.paused)fn(b)});return b},
     grid(cols,n,max,gap){const g=$('div','g',stage);const rows=Math.ceil(n/cols);g.style.gridTemplateColumns=`repeat(${cols},1fr)`;if(gap!=null)g.style.gap=gap+'px';
       g.style.maxWidth=`min(${max||420}px, max(220px, calc((100dvh - 270px) * ${cols} / ${rows})))`;const cs=[];for(let i=0;i<n;i++)cs.push($('button','c',g));return cs},
-    over(msg,score){if(ctx.dead||ctx.done)return;ctx.done=ctx.paused=true;if(score===undefined)score=ctx._s;let nb=false;
+    over(msg,score,kind){if(ctx.dead||ctx.done)return;ctx.done=ctx.paused=true;if(kind==='win'){SFX.win();confetti()}else if(kind==='lose')SFX.lose();else if(kind==='end')SFX.end();if(score===undefined)score=ctx._s;let nb=false;
       if(score!=null&&!game.ns){const b=store.get('b_'+game.id);if((b==null&&(game.low||score>0))||(b!=null&&(game.low?score<b:score>b))){store.set('b_'+game.id,score);nb=true;el.best.textContent=score}}
       ctx.after(450,()=>{el.omsg.textContent=msg;el.oscore.textContent=score!=null&&!game.ns?(game.sl||'Score')+' '+score:'';el.oscore.hidden=!el.oscore.textContent;el.onew.hidden=!nb;el.over.hidden=false})},
     destroy(){ctx.dead=true;cleanups.forEach(f=>{try{f()}catch(e){}})}
