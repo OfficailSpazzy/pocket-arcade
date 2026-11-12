@@ -541,10 +541,10 @@ reg('bricks','Brick Breaker','Arcade','Drag or use the arrow keys to move the pa
 });
 
 reg('duel','Paddle Duel','Arcade','Drag or use the arrow keys. First to 7 points beats the computer.',ctx=>{
-  const W=320,H=440,{cv,g}=ctx.canvas(W,H),p=ctx.follow(cv,W/2);let b,ps=0,as=0,ax=W/2,wait=1.2,t=0,trail=[],parts=[],rally=0,flash=null;
+  const W=320,H=440,{cv,g}=ctx.canvas(W,H),p=ctx.follow(cv,W/2);let b,ps=0,as=0,ax=W/2,wait=1.2,t=0,trail=[],parts=[],rally=0,flash=null,aiHits=0,miss=0,lastVy=0;
   const ME='#2fd6b5',AI='#ff5d7a';
   const rr=(x,y,w,h,r)=>{g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h)};
-  const serve=dir=>{b={x:W/2,y:H/2,vx:(Math.random()-.5)*220,vy:dir*240};wait=1.2;trail.length=0;rally=0};serve(1);
+  const serve=dir=>{b={x:W/2,y:H/2,vx:(Math.random()-.5)*220,vy:dir*240};wait=1.2;trail.length=0;rally=0;aiHits=0;lastVy=0};serve(1);
   const spark=(x,y,c,n)=>{for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*240,vy:(Math.random()-.5)*240,l:.45,c})};
   const point=mine=>{if(mine){ps++;beep(660,.08,'square',.05);beep(990,.14,'square',.05,.08)}else{as++;beep(330,.25,'sawtooth',.05,0,140)}
     flash={c:mine?ME:AI,t:.5};spark(b.x,clamp(b.y,0,H),mine?ME:AI,16);
@@ -552,10 +552,15 @@ reg('duel','Paddle Duel','Arcade','Drag or use the arrow keys. First to 7 points
     if(as>=7){beep(260,.6,'sawtooth',.07,0,50);return ctx.over('Computer wins')}serve(mine?-1:1)};
   ctx.loop(dt=>{t+=dt;if(ctx.held.left)p.x-=340*dt;if(ctx.held.right)p.x+=340*dt;p.x=clamp(p.x,32,W-32);
     if(wait>0){const before=Math.ceil(wait);wait-=dt;if(wait>0&&Math.ceil(wait)!==before)beep(440,.05,'square',.04);if(wait<=0)beep(880,.07,'square',.05)}
-    else{{const DS={baby:60,easy:105,medium:175,hard:255}[ctx.diff]||175;let tx=b.x;if(ctx.diff==='hard'){if(b.vy<0){const tt=(b.y-26)/-b.vy,L=W-12;let px=b.x+b.vx*tt-6;px=((px%(2*L))+2*L)%(2*L);if(px>L)px=2*L-px;tx=px+6}else tx=W/2+(b.x-W/2)*.3}else if(ctx.diff==='easy')tx=b.x+Math.sin(t*1.6)*34;else if(ctx.diff==='baby')tx=b.vy<0?b.x+Math.sin(t*1.1)*70:W/2+Math.sin(t*.7)*90;ax+=clamp(tx-ax,-DS*dt,DS*dt)}ax=clamp(ax,32,W-32);b.x+=b.vx*dt;b.y+=b.vy*dt;
+    else{{let DS={baby:95,easy:105,medium:175,hard:255}[ctx.diff]||175;let tx=b.x;if(ctx.diff==='hard'){if(b.vy<0){const tt=(b.y-26)/-b.vy,L=W-12;let px=b.x+b.vx*tt-6;px=((px%(2*L))+2*L)%(2*L);if(px>L)px=2*L-px;tx=px+6}else tx=W/2+(b.x-W/2)*.3}else if(ctx.diff==='easy')tx=b.x+Math.sin(t*1.6)*34;else if(ctx.diff==='baby'){
+        // baby: always chases the ball, but often overshoots or arrives late. Its first return each point always lands.
+        const pred=()=>{const tt=(b.y-26)/-b.vy,L=W-12;let px=b.x+b.vx*tt-6;px=((px%(2*L))+2*L)%(2*L);if(px>L)px=2*L-px;return px+6};
+        if(b.vy<0&&lastVy>=0)miss=Math.random()<.5?(Math.random()<.5?-1:1)*(42+Math.random()*34):(Math.random()-.5)*30;
+        if(b.vy<0){if(!aiHits){tx=pred();ax+=clamp(tx-ax,-300*dt,300*dt);ax=clamp(ax,32,W-32);DS=0}else tx=b.x+miss*(b.y<120?1:.4)}else tx=W/2+(b.x-W/2)*.4}
+      lastVy=b.vy;ax+=clamp(tx-ax,-DS*dt,DS*dt)}ax=clamp(ax,32,W-32);b.x+=b.vx*dt;b.y+=b.vy*dt;
       if(b.x<6){b.x=6;b.vx=Math.abs(b.vx);beep(240,.04,'triangle',.08)}if(b.x>W-6){b.x=W-6;b.vx=-Math.abs(b.vx);beep(240,.04,'triangle',.08)}
       if(b.vy>0&&b.y>H-32&&b.y<H-10&&Math.abs(b.x-p.x)<38){b.vy=-Math.min(520,Math.abs(b.vy)*1.05);b.vx=(b.x-p.x)*7;rally++;spark(b.x,H-30,ME,7);beep(420+Math.min(rally,12)*20,.06,'square',.05)}
-      if(b.vy<0&&b.y<32&&b.y>10&&Math.abs(b.x-ax)<38){b.vy=Math.min(520,Math.abs(b.vy)*1.05);b.vx=(b.x-ax)*7;rally++;spark(b.x,30,AI,7);beep(360+Math.min(rally,12)*20,.06,'square',.05)}
+      if(b.vy<0&&b.y<32&&b.y>10&&Math.abs(b.x-ax)<38){aiHits++;b.vy=Math.min(520,Math.abs(b.vy)*1.05);b.vx=(b.x-ax)*7;rally++;spark(b.x,30,AI,7);beep(360+Math.min(rally,12)*20,.06,'square',.05)}
       trail.push({x:b.x,y:b.y});if(trail.length>9)trail.shift();
       if(b.y>H+12)return point(false);if(b.y<-12)return point(true)}
     parts.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.l-=dt});parts=parts.filter(q=>q.l>0);if(flash){flash.t-=dt;if(flash.t<=0)flash=null}
