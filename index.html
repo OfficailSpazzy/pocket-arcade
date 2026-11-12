@@ -1643,13 +1643,13 @@ reg('pool','8-Ball Pool','Board','Drag the cue stick around the ball to aim. Hol
   say(turn===ME?'YOU BREAK':OPN+' BREAKS',1.4);
 },{ns:true});
 
-reg('checkers','Checkers','Board','Tap a piece, then tap where it goes. Your pieces move up the board. Jumps are required, chain jumps keep going, and reaching the far row crowns a king.',ctx=>{
+reg('checkers','Checkers','Board','Tap a piece, then tap where it goes. Your pieces move up the board. Jumping is optional, chain jumps keep going, and reaching the far row crowns a king.',ctx=>{
   const N=8,inb=(x,y)=>x>=0&&y>=0&&x<N&&y<N;let b=Array(64).fill(0);for(let i=0;i<64;i++){const x=i%N,y=(i/N)|0;if((x+y)%2){if(y<3)b[i]=-1;else if(y>4)b[i]=1}}
   const NW=ctx.mp?mpWire(ctx):null,PS=NW&&NW.me===1?-1:1,FLIP=PS===-1,OPN=NW?'Friend':'CPU';let side=NW?(NW.first===0?1:-1):1;
   const dirs=p=>Math.abs(p)===2?[[-1,-1],[1,-1],[-1,1],[1,1]]:p>0?[[-1,-1],[1,-1]]:[[-1,1],[1,1]];
   const promote=(nb,i)=>{if(nb[i]===1&&i<N){nb[i]=2;return true}if(nb[i]===-1&&i>=N*(N-1)){nb[i]=-2;return true}return false};
   const seqs=(bd,s)=>{const res=[];const rec=(bd,i,path,caps)=>{const p=bd[i],x=i%N,y=(i/N)|0;let ext=false;for(const[dx,dy] of dirs(p)){const mx=x+dx,my=y+dy,tx=x+2*dx,ty=y+2*dy;if(!inb(tx,ty))continue;const m=my*N+mx,to=ty*N+tx;if(bd[m]*p<0&&bd[to]===0){ext=true;const nb=bd.slice();nb[to]=p;nb[i]=0;nb[m]=0;if(promote(nb,to))res.push({path:[...path,to],caps:[...caps,m]});else rec(nb,to,[...path,to],[...caps,m])}}if(!ext&&caps.length)res.push({path,caps})};rec(bd,s,[s],[]);return res};
-  const moves=(bd,sd)=>{const caps=[],simple=[];for(let i=0;i<64;i++){if(bd[i]*sd<=0)continue;caps.push(...seqs(bd,i));const x=i%N,y=(i/N)|0;for(const[dx,dy] of dirs(bd[i])){const tx=x+dx,ty=y+dy;if(inb(tx,ty)&&bd[ty*N+tx]===0)simple.push({path:[i,ty*N+tx],caps:[]})}}return caps.length?caps:simple};
+  const moves=(bd,sd)=>{const caps=[],simple=[];for(let i=0;i<64;i++){if(bd[i]*sd<=0)continue;caps.push(...seqs(bd,i));const x=i%N,y=(i/N)|0;for(const[dx,dy] of dirs(bd[i])){const tx=x+dx,ty=y+dy;if(inb(tx,ty)&&bd[ty*N+tx]===0)simple.push({path:[i,ty*N+tx],caps:[]})}}return caps.concat(simple)};
   const apply=(bd,m)=>{const nb=bd.slice(),p=nb[m.path[0]];nb[m.path[0]]=0;m.caps.forEach(c=>nb[c]=0);const e=m.path[m.path.length-1];nb[e]=p;promote(nb,e);return nb};
   const evalRed=bd=>{let s=0;for(let i=0;i<64;i++){const p=bd[i];if(!p)continue;const y=(i/N)|0,x=i%N,ctr=(x>1&&x<6&&y>1&&y<6)?.06:0;s+=p>0?(p===2?1.75:1+.045*(7-y))+ctr:-((p===-2?1.75:1+.045*y)+ctr)}return s};
   const nega=(bd,d,sd,al,be)=>{const ms=moves(bd,sd);if(!ms.length)return -1000-d;if(!d)return sd*evalRed(bd);let best=-1e9;for(const m of ms){const v=-nega(apply(bd,m),d-1,-sd,-be,-al);if(v>best)best=v;if(v>al)al=v;if(al>=be)break}return best};
