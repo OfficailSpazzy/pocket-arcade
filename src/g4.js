@@ -1,6 +1,6 @@
 
 /* ================= ONLINE (vs computer) ================= */
-reg('pool','8-Ball Pool','Board','Drag to aim. Hold SHOOT, let go to hit. Sink your group, then the 8.',ctx=>{
+reg('pool','8-Ball Pool','Board','Drag the cue stick around the ball to aim. Hold SHOOT, let go to hit. Sink your group, then the 8.',ctx=>{
   const W=300,H=560,L=24,R=276,T=54,B=536,r=8,MX=(L+R)/2,MY=(T+B)/2,{cv,g}=ctx.canvas(W,H,62);
   const PK=[[L-3,T-3,15],[R+3,T-3,15],[L-7,MY,13],[R+7,MY,13],[L-3,B+3,15],[R+3,B+3,15]];
   const COL=['#f4f1e8','#f2c21b','#1f5fd0','#d42a2a','#6a2fa0','#ff7a1a','#1f8a3a','#7a1a1a','#111111','#f2c21b','#1f5fd0','#d42a2a','#6a2fa0','#ff7a1a','#1f8a3a','#7a1a1a'];
@@ -60,7 +60,7 @@ reg('pool','8-Ball Pool','Board','Drag to aim. Hold SHOOT, let go to hit. Sink y
     const g2=()=>((Math.random()+Math.random()+Math.random())/3-.5)*2;plan={ang:p.ang+g2()*err,pw:clamp(p.pw+g2()*.06,.2,1),from:aim};say('CPU IS AIMING',1)};
   // ---- input ----
   const canShoot=()=>turn===ME&&state==='aim';
-  const aimTo=q=>{const c=cue();if(Math.hypot(q.x-c.x,q.y-c.y)>4)aim=Math.atan2(q.y-c.y,q.x-c.x)};
+  const aimTo=q=>{const c=cue();if(Math.hypot(q.x-c.x,q.y-c.y)>4)aim=Math.atan2(c.y-q.y,c.x-q.x)};
   ctx.on(cv,'pointerdown',e=>{e.preventDefault();if(!canShoot()||charging)return;const q=cv.pos(e),c=cue();down=true;dragCue=inHand&&Math.hypot(q.x-c.x,q.y-c.y)<26;if(!dragCue)aimTo(q)});
   ctx.on(window,'pointermove',e=>{if(!down||!canShoot())return;const q=cv.pos(e),c=cue();if(dragCue){const x=clamp(q.x,L+r,R-r),y=clamp(q.y,T+r,B-r);if(freeSpot(x,y,c)){c.x=x;c.y=y}}else aimTo(q)});
   ctx.on(window,'pointerup',()=>{down=false;dragCue=false});
