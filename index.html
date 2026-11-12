@@ -42,9 +42,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .marq h1 .l2{font-size:.74em;letter-spacing:.14em;color:#f2ead6;text-shadow:1px 1px 0 #1d7fd0,2px 2px 0 #1d7fd0,3px 3px 0 #0d3f7a,4px 4px 0 #000}
 .bezel{margin:0 -12px;padding:8px 16px 8px;background:#060607;border-bottom:3px solid #000;text-align:center}
 .bz{margin:0;font:400 7px/1 "Press Start 2P",monospace;letter-spacing:.12em;color:#ffd23f}
-.bz.b{color:#c9c2ae;margin-top:7px}
+.bz.b{color:#c9c2ae;margin-top:16px}
 .bz i{font-style:normal;color:#e63a2e}
-.crt{position:relative;margin-top:7px;border-radius:16px/18px;overflow:hidden;background:#000;box-shadow:0 0 0 2px #000,0 0 0 4px #c4161c,0 0 0 6px #060607,0 0 0 8px #ffd23f}
+.crt{position:relative;margin:15px 8px 0;border-radius:16px/18px;overflow:hidden;background:#000;box-shadow:0 0 0 2px #000,0 0 0 4px #c4161c,0 0 0 6px #060607,0 0 0 8px #ffd23f}
 .crt::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;box-shadow:inset 0 0 30px rgba(0,0,0,.9);background:radial-gradient(ellipse at 30% 18%,rgba(255,255,255,.07),transparent 45%)}
 #scr{display:block;width:100%;aspect-ratio:4/3;touch-action:none;cursor:pointer;image-rendering:pixelated}
 .cp{position:relative;margin:0 -12px;padding:16px 16px 12px;background:#141317;border-top:5px solid #2a2a2e;display:flex;flex-direction:column;gap:12px}
@@ -100,7 +100,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 @keyframes cspin{0%{transform:scaleX(1)}25%{transform:scaleX(.12)}50%{transform:scaleX(-1)}75%{transform:scaleX(-.12)}100%{transform:scaleX(1)}}
 .ejectc{position:absolute;left:0;top:0;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;z-index:6;pointer-events:none;background:radial-gradient(circle at 38% 32%,#f4f1ea,#c9c4b8 50%,#8a857a);box-shadow:inset 0 0 0 1.5px #e8e4da,0 2px 3px rgba(0,0,0,.6)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (max-height:700px){.cab{padding-bottom:9px}.marq{padding:6px 8px 13px;border-top-width:5px;border-bottom-width:5px}.marq h1{font-size:26px}.bezel{padding:6px 14px}.bz.b{display:none}.crt{margin-top:6px}.cp{padding:13px 14px 9px;gap:9px}.hb{width:42px;height:42px}.hb.red{width:54px;height:54px}.stick{height:50px}.stick .arm{height:28px}.ab-key{height:28px}.keys{gap:7px 6px}.door{margin-top:7px;padding:5px 10px}.mech{width:50px;height:64px;padding:5px}.mt b{font-size:14px}.mt span{font-size:7px}.ret{height:20px}}
+@media (max-height:700px){.cab{padding-bottom:9px}.marq{padding:6px 8px 13px;border-top-width:5px;border-bottom-width:5px}.marq h1{font-size:26px}.bezel{padding:6px 14px}.bz.b{display:none}.crt{margin-top:14px}.cp{padding:13px 14px 9px;gap:9px}.hb{width:42px;height:42px}.hb.red{width:54px;height:54px}.stick{height:50px}.stick .arm{height:28px}.ab-key{height:28px}.keys{gap:7px 6px}.door{margin-top:7px;padding:5px 10px}.mech{width:50px;height:64px;padding:5px}.mt b{font-size:14px}.mt span{font-size:7px}.ret{height:20px}}
 .mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
 .mast h1{font:400 clamp(30px,9vw,58px)/.95 var(--display);margin:0;letter-spacing:.01em;text-wrap:balance}
 .mast h1 span{color:var(--puz)}
@@ -197,6 +197,54 @@ canvas.cv{display:block;background:#0e0a17;border:1px solid var(--line);border-r
 #omsg{font:400 28px/1.1 var(--display);margin:0;text-wrap:balance}
 #oscore{margin:0;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
 #onew{margin:0;color:var(--puz);font-weight:700}
+
+/* ---------- in-game cabinet skin ---------- */
+#game{height:100%;display:flex;flex-direction:column;padding:calc(6px + env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));background:#0c0b10}
+.gcab{flex:1;min-height:0;display:flex;flex-direction:column;max-width:560px;width:100%;margin:0 auto;background:linear-gradient(90deg,#0b0a0d,#1b191f 50%,#0b0a0d);border:5px solid #c4161c;border-radius:7px;box-shadow:inset 0 0 0 1px #000,0 0 0 1px #000}
+.gmarq{flex:none;text-align:center;padding:5px 6px 9px;border-bottom:5px solid #2a2a2e;background:linear-gradient(180deg,#1a0a2a 0 52%,#ffd23f 52% 62%,#120614 62% 66%,#ff9a1f 66% 76%,#120614 76% 80%,#ff5a1f 80% 90%,#120614 90% 93%,#e0185c 93% 100%)}
+.gmarq span{display:inline-block;transform:skewX(-9deg);font:400 17px/1 var(--display);color:#ffe14d;-webkit-text-stroke:1px #000;text-shadow:1px 1px 0 #ff5a1f,2px 2px 0 #c4161c,3px 3px 0 #000}
+.gmarq i{font-style:normal;color:#f2ead6;text-shadow:1px 1px 0 #1d7fd0,2px 2px 0 #0d3f7a,3px 3px 0 #000}
+.gbez{flex:1;min-height:0;display:flex;padding:12px 12px 10px;background:#060607}
+.gcrt{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;border-radius:14px/16px;overflow:hidden;background:#000;box-shadow:0 0 0 2px #000,0 0 0 4px #c4161c,0 0 0 6px #060607,0 0 0 8px #ffd23f}
+.scan{position:absolute;inset:0;pointer-events:none;z-index:9;border-radius:inherit;background:repeating-linear-gradient(180deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);box-shadow:inset 0 0 26px rgba(0,0,0,.85)}
+#game #bar{flex:none;background:transparent;border:0;padding:10px 12px 6px;gap:12px;align-items:flex-end}
+#gname{font:400 10px/1.3 "Press Start 2P",monospace;color:#ffd23f;white-space:normal;overflow:visible}
+#game .stat{font:400 7px/1 "Press Start 2P",monospace;color:#ff2a2a;letter-spacing:.04em;text-transform:uppercase}
+#game .stat b{margin-top:4px;font:400 11px/1 "Press Start 2P",monospace;color:#f4f4f4}
+#game #wrap{background:#000}
+#game,#game button,#game input{font-family:"Press Start 2P",monospace}
+#help{font-size:8px;line-height:1.7;color:#a9a39a;padding:4px 14px 0}
+#status{font-size:8px;line-height:1.5;min-height:22px;padding-top:6px;color:#f4f4f4}
+#clock{color:#ff2a2a}
+#info{color:#ffd23f}
+.btn{font-size:9px;text-transform:uppercase;line-height:1.3;background:#111;color:#f4f4f4;border:2px solid #f4f4f4;border-radius:0;box-shadow:3px 3px 0 #c4161c;min-height:40px;padding:8px 12px}
+.btn:hover{border-color:#ffd23f}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #c4161c}
+.btn.pri{background:#ffd23f;border-color:#ffd23f;color:#111}
+.btn.on{background:#f4f4f4;color:#111}
+.btn:disabled{opacity:.35}
+.pad .btn{font-size:16px;min-height:54px}
+.c{font-size:clamp(10px,3.6vw,18px);border-radius:3px}
+.note{color:#a9a39a;font-size:8px;line-height:1.6}
+.big{font:400 clamp(14px,5vw,24px)/1.3 "Press Start 2P",monospace}
+.txt{border-radius:0;border:2px solid #f4f4f4;background:#000;font-size:14px}
+.kb button{border-radius:2px;font-size:10px}
+canvas.cv{border-radius:4px;border-color:#222}
+#over{background:rgba(0,0,0,.82)}
+#over .box{background:#000;border:0;border-radius:0;box-shadow:0 0 0 3px #f4f4f4,0 0 0 6px #c4161c,0 0 0 9px #ffd23f;gap:14px;padding:22px 18px}
+#omsg{font:400 15px/1.4 "Press Start 2P",monospace;color:#ff2a2a}
+#oscore{font:400 10px/1.4 "Press Start 2P",monospace;color:#f4f4f4}
+#onew{font:400 9px/1.4 "Press Start 2P",monospace;color:#ffd23f;animation:blink 1s steps(2) infinite}
+.gpanel{flex:none;position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 8px;background:#141317;border-top:5px solid #2a2a2e}
+.gpanel::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(180deg,#ffd23f 0 2px,#ff7a1a 2px 4px,#c4161c 4px 6px)}
+.gpanel #back{--c:#1d6fd6;--d:#0f3f80;width:40px;height:40px;border:0;border-radius:50%;padding:0;background:radial-gradient(circle,var(--c) 0 56%,var(--d) 57% 63%,var(--c) 64% 100%);box-shadow:0 0 0 2px #000,0 4px 0 #000,inset 0 -3px 4px rgba(0,0,0,.35),inset 0 2px 2px rgba(255,255,255,.25)}
+.gpanel #back:active{transform:translateY(2px);box-shadow:0 0 0 2px #000,0 2px 0 #000,inset 0 3px 5px rgba(0,0,0,.45)}
+.gpanel #mute{width:auto;height:auto;border:0;border-radius:0;background:none;padding:0;font-size:inherit}
+.gpanel .sw .lbl{color:#efe6cf}
+.gpanel .tog{box-shadow:0 0 0 2px #55535c}
+.gmeta{font:400 7px/1.6 "Press Start 2P",monospace;color:#6f6a62;text-align:center;letter-spacing:.08em}
+@keyframes blink{50%{opacity:.25}}
+@media (max-height:700px){.gmarq{padding:3px 6px 7px}.gmarq span{font-size:14px}.gbez{padding:10px 10px 8px}.gpanel{padding:11px 14px 6px}.gpanel #back{width:34px;height:34px}#help{font-size:7px}}
 </style>
 </head>
 <body>
@@ -234,25 +282,36 @@ canvas.cv{display:block;background:#0e0a17;border:1px solid var(--line);border-r
   <p id="sr" class="sr" aria-live="polite"></p>
 </main>
 <section id="game" hidden>
-  <div id="bar">
-    <button id="back" type="button">&larr; Arcade</button>
-    <div id="gname"></div>
-    <button id="mute" type="button" aria-label="Sound on">&#128266;</button>
-    <div class="stat" id="sbox"><span id="slab">Score</span><b id="score">0</b></div>
-    <div class="stat" id="bbox">Best<b id="best">-</b></div>
-  </div>
-  <div id="wrap">
-    <p id="help"></p>
-    <div id="status"><span id="info"></span><span id="clock"></span></div>
-    <div id="stage"></div>
-    <div id="over" hidden>
-      <div class="box">
-        <p id="omsg"></p>
-        <p id="oscore"></p>
-        <p id="onew">New best</p>
-        <button class="btn pri" id="again" type="button">Play again</button>
-        <button class="btn" id="quit" type="button">All games</button>
+  <div class="gcab">
+    <div class="gmarq"><span>SPAZZY'S <i>ARCADE</i></span></div>
+    <div class="gbez">
+      <div class="gcrt">
+        <div id="bar">
+          <div id="gname"></div>
+          <div class="stat" id="sbox"><span id="slab">Score</span><b id="score">0</b></div>
+          <div class="stat" id="bbox"><span>Hi-score</span><b id="best">-</b></div>
+        </div>
+        <div id="wrap">
+          <p id="help"></p>
+          <div id="status"><span id="info"></span><span id="clock"></span></div>
+          <div id="stage"></div>
+          <div id="over" hidden>
+            <div class="box">
+              <p id="omsg"></p>
+              <p id="oscore"></p>
+              <p id="onew">New hi-score!</p>
+              <button class="btn pri" id="again" type="button">Play again</button>
+              <button class="btn" id="quit" type="button">Exit to arcade</button>
+            </div>
+          </div>
+        </div>
+        <div class="scan" aria-hidden="true"></div>
       </div>
+    </div>
+    <div class="gpanel">
+      <div class="grp"><button class="ab hb" id="back" type="button" aria-label="Exit to arcade"></button><span class="lbl">&#9668; EXIT</span></div>
+      <span class="gmeta" id="gmeta"></span>
+      <button class="sw" id="mute" type="button" aria-label="Sound on"><span class="lbl">SOUND</span><span class="tog"><i></i></span></button>
     </div>
   </div>
 </section>
@@ -301,7 +360,7 @@ function makeCtx(game){
     after(ms,fn){const id=setTimeout(()=>{if(!ctx.dead)fn()},ms);cleanups.push(()=>clearTimeout(id))},
     clock(sec,end){const o={t:sec};const show=()=>el.clock.textContent='Time '+Math.ceil(o.t);show();ctx.every(100,()=>{o.t-=.1;if(o.t<=0){o.t=0;show();end()}else show()});return o},
     canvas(w,h,reserve){const cv=$('canvas','cv',stage);const dpr=Math.min(2,window.devicePixelRatio||1);cv.width=w*dpr;cv.height=h*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);
-      const fit=()=>{const aw=Math.max(140,stage.clientWidth-32),ah=Math.max(160,window.innerHeight-el.bar.offsetHeight-(reserve||0)-96);const s=Math.min(aw/w,ah/h,1.9);cv.style.width=Math.round(w*s)+'px';cv.style.height=Math.round(h*s)+'px'};
+      const fit=()=>{const aw=Math.max(140,stage.clientWidth-32),ah=Math.max(160,el.wrap.clientHeight-el.help.offsetHeight-document.getElementById('status').offsetHeight-(reserve||0)-44);const s=Math.min(aw/w,ah/h,1.9);cv.style.width=Math.round(w*s)+'px';cv.style.height=Math.round(h*s)+'px'};
       fit();ctx.on(window,'resize',fit);
       cv.pos=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}};
       return{cv,g}},
@@ -318,7 +377,7 @@ function makeCtx(game){
     row(){return $('div','row',stage)},
     btn(p,label,fn,cls){const b=$('button','btn'+(cls?' '+cls:''),p,label);ctx.on(b,'click',()=>{if(!ctx.paused)fn(b)});return b},
     grid(cols,n,max,gap){const g=$('div','g',stage);const rows=Math.ceil(n/cols);g.style.gridTemplateColumns=`repeat(${cols},1fr)`;if(gap!=null)g.style.gap=gap+'px';
-      g.style.maxWidth=`min(${max||420}px, max(220px, calc((100dvh - 270px) * ${cols} / ${rows})))`;const cs=[];for(let i=0;i<n;i++)cs.push($('button','c',g));return cs},
+      g.style.maxWidth=`min(${max||420}px, max(220px, calc((100dvh - 410px) * ${cols} / ${rows})))`;const cs=[];for(let i=0;i<n;i++)cs.push($('button','c',g));return cs},
     over(msg,score,kind){if(ctx.dead||ctx.done)return;ctx.done=ctx.paused=true;if(kind==='win'){SFX.win();confetti()}else if(kind==='lose')SFX.lose();else if(kind==='end')SFX.end();if(score===undefined)score=ctx._s;let nb=false;
       if(score!=null&&!game.ns){const b=store.get('b_'+game.id);if((b==null&&(game.low||score>0))||(b!=null&&(game.low?score<b:score>b))){store.set('b_'+game.id,score);nb=true;el.best.textContent=score}}
       ctx.after(450,()=>{el.omsg.textContent=msg;el.oscore.textContent=score!=null&&!game.ns?(game.sl||'Score')+' '+score:'';el.oscore.hidden=!el.oscore.textContent;el.onew.hidden=!nb;el.over.hidden=false})},
@@ -331,7 +390,7 @@ function makeCtx(game){
   return ctx;
 }
 function stopGame(){if(cur){cur.destroy();cur=null}el.stage.textContent='';el.over.hidden=true;el.info.textContent='';el.clock.textContent=''}
-function play(game){stopGame();el.home.hidden=true;el.game.hidden=false;el.gname.textContent=game.name;el.help.textContent=game.help;el.slab.textContent=game.sl||'Score';el.score.textContent='0';
+function play(game){stopGame();el.home.hidden=true;el.game.hidden=false;el.gname.textContent=game.name.toUpperCase();{const m=document.getElementById('gmeta');if(m)m.textContent='GAME '+String(GAMES.indexOf(game)+1).padStart(2,'0')+' \u00B7 '+game.cat.toUpperCase()}el.help.textContent=game.help;el.slab.textContent=game.sl||'Score';el.score.textContent='0';
   el.sbox.hidden=el.bbox.hidden=!!game.ns;const b=store.get('b_'+game.id);el.best.textContent=b==null?'-':b;el.wrap.scrollTop=0;
   cur=makeCtx(game);cur.game=game;try{game.fn(cur)}catch(e){console.error(e);$('p','note',el.stage,'This game hit an error. Go back and try another.')}}
 
@@ -913,7 +972,7 @@ reg('2048','2048','Puzzle','Swipe or use the arrow keys. Matching tiles slide to
   const COL={2:'#eee4da',4:'#ede0c8',8:'#f2b179',16:'#f59563',32:'#f67c5f',64:'#f65e3b',128:'#edcf72',256:'#edcc61',512:'#edc850',1024:'#edc53f',2048:'#edc22e'};
   const bd=$('div','b48',ctx.stage);for(let i=0;i<16;i++){const c=$('div','bg',bd);c.style.setProperty('--c',i%4);c.style.setProperty('--r',i>>2)}
   let grid=Array.from({length:4},()=>Array(4).fill(null)),sc=0,won=false,pending=null;
-  const paint=t=>{const v=t.v;t.in.textContent=v;t.in.style.background=COL[v]||'#3c3a32';t.in.style.color=v>4?'#fff':'#776e65';t.in.style.fontSize=v>999?'clamp(16px,5vw,26px)':v>99?'clamp(20px,6.4vw,32px)':'clamp(24px,8vw,40px)';t.in.style.boxShadow=v>=128?`0 0 ${Math.log2(v)*2}px ${COL[v]||'#edc22e'}`:''};
+  const paint=t=>{const v=t.v;t.in.textContent=v;t.in.style.background=COL[v]||'#3c3a32';t.in.style.color=v>4?'#fff':'#776e65';t.in.style.fontSize=v>999?'clamp(11px,3.6vw,17px)':v>99?'clamp(14px,4.6vw,22px)':'clamp(18px,6vw,28px)';t.in.style.boxShadow=v>=128?`0 0 ${Math.log2(v)*2}px ${COL[v]||'#edc22e'}`:''};
   const place=(t,r,c)=>{t.r=r;t.c=c;t.el.style.setProperty('--r',r);t.el.style.setProperty('--c',c)};
   const spawn=()=>{const e=[];for(let r=0;r<4;r++)for(let c=0;c<4;c++)if(!grid[r][c])e.push([r,c]);if(!e.length)return;const [r,c]=e[R(e.length)];
     const t={v:Math.random()<.9?2:4};t.el=$('div','tl',bd);t.in=$('div','tv',t.el);place(t,r,c);paint(t);anim(t.in,'appear');grid[r][c]=t};
@@ -1466,7 +1525,7 @@ function boot(){
   window.addEventListener('keydown',e=>{if(el.home.hidden||e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key,tg=e.target&&e.target.tagName;if(tg==='BUTTON'&&(k==='Enter'||k===' '))return;
     if(k==='ArrowRight'||k==='ArrowDown'){e.preventDefault();step(1)}else if(k==='ArrowLeft'||k==='ArrowUp'){e.preventDefault();step(-1)}
     else if(/^[0-9]$/.test(k))typeDigit(k);else if(k==='Enter'||k===' '){e.preventDefault();startSel()}else if(k==='Backspace'||k==='Escape'){typed='';clearTimeout(typeT);led()}});
-  const ms=()=>{el.mute.innerHTML=MUTED?'&#128263;':'&#128266;';[el.mute,$id('hmute')].forEach(b=>b.setAttribute('aria-label',MUTED?'Sound off':'Sound on'));$id('hmute').classList.toggle('off',MUTED)};ms();
+  const ms=()=>{[el.mute,$id('hmute')].forEach(b=>{b.setAttribute('aria-label',MUTED?'Sound off':'Sound on');b.classList.toggle('off',MUTED)})};ms();
   [el.mute,$id('hmute')].forEach(b=>b.addEventListener('click',()=>{MUTED=!MUTED;store.set('mute',MUTED);ms();if(!MUTED){unlockAudio();setTimeout(()=>SFX.tap(),30)}}));
   el.back.addEventListener('click',()=>nav(''));el.quit.addEventListener('click',()=>nav(''));el.again.addEventListener('click',()=>{if(cur)play(cur.game)});
   window.addEventListener('hashchange',()=>{const id=location.hash.slice(1);if(id!==shown)show(id)});

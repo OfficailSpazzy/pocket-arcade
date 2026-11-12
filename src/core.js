@@ -42,7 +42,7 @@ function makeCtx(game){
     after(ms,fn){const id=setTimeout(()=>{if(!ctx.dead)fn()},ms);cleanups.push(()=>clearTimeout(id))},
     clock(sec,end){const o={t:sec};const show=()=>el.clock.textContent='Time '+Math.ceil(o.t);show();ctx.every(100,()=>{o.t-=.1;if(o.t<=0){o.t=0;show();end()}else show()});return o},
     canvas(w,h,reserve){const cv=$('canvas','cv',stage);const dpr=Math.min(2,window.devicePixelRatio||1);cv.width=w*dpr;cv.height=h*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);
-      const fit=()=>{const aw=Math.max(140,stage.clientWidth-32),ah=Math.max(160,window.innerHeight-el.bar.offsetHeight-(reserve||0)-96);const s=Math.min(aw/w,ah/h,1.9);cv.style.width=Math.round(w*s)+'px';cv.style.height=Math.round(h*s)+'px'};
+      const fit=()=>{const aw=Math.max(140,stage.clientWidth-32),ah=Math.max(160,el.wrap.clientHeight-el.help.offsetHeight-document.getElementById('status').offsetHeight-(reserve||0)-44);const s=Math.min(aw/w,ah/h,1.9);cv.style.width=Math.round(w*s)+'px';cv.style.height=Math.round(h*s)+'px'};
       fit();ctx.on(window,'resize',fit);
       cv.pos=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}};
       return{cv,g}},
@@ -59,7 +59,7 @@ function makeCtx(game){
     row(){return $('div','row',stage)},
     btn(p,label,fn,cls){const b=$('button','btn'+(cls?' '+cls:''),p,label);ctx.on(b,'click',()=>{if(!ctx.paused)fn(b)});return b},
     grid(cols,n,max,gap){const g=$('div','g',stage);const rows=Math.ceil(n/cols);g.style.gridTemplateColumns=`repeat(${cols},1fr)`;if(gap!=null)g.style.gap=gap+'px';
-      g.style.maxWidth=`min(${max||420}px, max(220px, calc((100dvh - 270px) * ${cols} / ${rows})))`;const cs=[];for(let i=0;i<n;i++)cs.push($('button','c',g));return cs},
+      g.style.maxWidth=`min(${max||420}px, max(220px, calc((100dvh - 410px) * ${cols} / ${rows})))`;const cs=[];for(let i=0;i<n;i++)cs.push($('button','c',g));return cs},
     over(msg,score,kind){if(ctx.dead||ctx.done)return;ctx.done=ctx.paused=true;if(kind==='win'){SFX.win();confetti()}else if(kind==='lose')SFX.lose();else if(kind==='end')SFX.end();if(score===undefined)score=ctx._s;let nb=false;
       if(score!=null&&!game.ns){const b=store.get('b_'+game.id);if((b==null&&(game.low||score>0))||(b!=null&&(game.low?score<b:score>b))){store.set('b_'+game.id,score);nb=true;el.best.textContent=score}}
       ctx.after(450,()=>{el.omsg.textContent=msg;el.oscore.textContent=score!=null&&!game.ns?(game.sl||'Score')+' '+score:'';el.oscore.hidden=!el.oscore.textContent;el.onew.hidden=!nb;el.over.hidden=false})},
@@ -72,6 +72,6 @@ function makeCtx(game){
   return ctx;
 }
 function stopGame(){if(cur){cur.destroy();cur=null}el.stage.textContent='';el.over.hidden=true;el.info.textContent='';el.clock.textContent=''}
-function play(game){stopGame();el.home.hidden=true;el.game.hidden=false;el.gname.textContent=game.name;el.help.textContent=game.help;el.slab.textContent=game.sl||'Score';el.score.textContent='0';
+function play(game){stopGame();el.home.hidden=true;el.game.hidden=false;el.gname.textContent=game.name.toUpperCase();{const m=document.getElementById('gmeta');if(m)m.textContent='GAME '+String(GAMES.indexOf(game)+1).padStart(2,'0')+' \u00B7 '+game.cat.toUpperCase()}el.help.textContent=game.help;el.slab.textContent=game.sl||'Score';el.score.textContent='0';
   el.sbox.hidden=el.bbox.hidden=!!game.ns;const b=store.get('b_'+game.id);el.best.textContent=b==null?'-':b;el.wrap.scrollTop=0;
   cur=makeCtx(game);cur.game=game;try{game.fn(cur)}catch(e){console.error(e);$('p','note',el.stage,'This game hit an error. Go back and try another.')}}

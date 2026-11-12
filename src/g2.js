@@ -6,7 +6,7 @@ reg('2048','2048','Puzzle','Swipe or use the arrow keys. Matching tiles slide to
   const COL={2:'#eee4da',4:'#ede0c8',8:'#f2b179',16:'#f59563',32:'#f67c5f',64:'#f65e3b',128:'#edcf72',256:'#edcc61',512:'#edc850',1024:'#edc53f',2048:'#edc22e'};
   const bd=$('div','b48',ctx.stage);for(let i=0;i<16;i++){const c=$('div','bg',bd);c.style.setProperty('--c',i%4);c.style.setProperty('--r',i>>2)}
   let grid=Array.from({length:4},()=>Array(4).fill(null)),sc=0,won=false,pending=null;
-  const paint=t=>{const v=t.v;t.in.textContent=v;t.in.style.background=COL[v]||'#3c3a32';t.in.style.color=v>4?'#fff':'#776e65';t.in.style.fontSize=v>999?'clamp(16px,5vw,26px)':v>99?'clamp(20px,6.4vw,32px)':'clamp(24px,8vw,40px)';t.in.style.boxShadow=v>=128?`0 0 ${Math.log2(v)*2}px ${COL[v]||'#edc22e'}`:''};
+  const paint=t=>{const v=t.v;t.in.textContent=v;t.in.style.background=COL[v]||'#3c3a32';t.in.style.color=v>4?'#fff':'#776e65';t.in.style.fontSize=v>999?'clamp(11px,3.6vw,17px)':v>99?'clamp(14px,4.6vw,22px)':'clamp(18px,6vw,28px)';t.in.style.boxShadow=v>=128?`0 0 ${Math.log2(v)*2}px ${COL[v]||'#edc22e'}`:''};
   const place=(t,r,c)=>{t.r=r;t.c=c;t.el.style.setProperty('--r',r);t.el.style.setProperty('--c',c)};
   const spawn=()=>{const e=[];for(let r=0;r<4;r++)for(let c=0;c<4;c++)if(!grid[r][c])e.push([r,c]);if(!e.length)return;const [r,c]=e[R(e.length)];
     const t={v:Math.random()<.9?2:4};t.el=$('div','tl',bd);t.in=$('div','tv',t.el);place(t,r,c);paint(t);anim(t.in,'appear');grid[r][c]=t};
