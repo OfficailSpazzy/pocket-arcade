@@ -74,9 +74,11 @@ function coinDrop(done){const reduce=matchMedia('(prefers-reduced-motion: reduce
   an.onfinish=()=>{coin.remove();fin()};setTimeout(()=>{if(coin.isConnected){coin.remove();fin()}},D+600)}
 function eject(btn){if(busy)return;const cab=$id('cab'),ret=$id('ret'),slit=btn.querySelector('.slit');btn.classList.remove('lit');void btn.offsetWidth;btn.classList.add('lit');
   beep(220,.05,'square',.05);noise(.06,.14,0,1500);[0,1,2].forEach(i=>beep(1400-i*200,.03,'square',.025,.12+i*.07));beep(140,.06,'triangle',.12,.36);
-  if(!cab.animate||matchMedia('(prefers-reduced-motion: reduce)').matches)return;const c=cab.getBoundingClientRect(),s2=slit.getBoundingClientRect(),r2=ret.getBoundingClientRect();
-  const x=s2.left-c.left+s2.width/2,y0=s2.top-c.top+s2.height*.7,y1=r2.top-c.top+r2.height/2;const k=$('div','ejectc',cab);
-  const an=k.animate([{transform:`translate(${x}px,${y0}px) scale(.2,.6)`,opacity:0},{transform:`translate(${x}px,${y0+4}px) scale(.9)`,opacity:1,offset:.2},{transform:`translate(${x}px,${y1}px) scale(.9)`,opacity:1,offset:.55},{transform:`translate(${x}px,${y1-5}px) scale(.9)`,offset:.68},{transform:`translate(${x}px,${y1}px) scale(.9)`,opacity:1,offset:.8},{transform:`translate(${x}px,${y1+2}px) scale(.7,.4)`,opacity:0}],{duration:700,easing:'ease-in',fill:'forwards'});
+  if(!cab.animate||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  // the coin drops out of the chute inside the coin return cup, rattles, then sits there a moment
+  ret.querySelectorAll('.ejectc').forEach(n=>n.remove());const k=$('div','ejectc',ret),h=ret.clientHeight;
+  const an=k.animate([{transform:'translate(-50%,-26px) rotate(0deg) scale(.9)',opacity:1},{transform:`translate(-50%,${h-21}px) rotate(80deg) scale(.9)`,offset:.3,easing:'ease-out'},{transform:`translate(-50%,${h-27}px) rotate(110deg) scale(.9)`,offset:.42,easing:'ease-in'},{transform:`translate(-50%,${h-21}px) rotate(130deg) scale(.9,.8)`,offset:.52},{transform:`translate(-50%,${h-23}px) rotate(140deg) scale(.9)`,offset:.58},{transform:`translate(-50%,${h-21}px) rotate(145deg) scale(.9,.8)`,offset:.64,opacity:1},{transform:`translate(-50%,${h-21}px) rotate(145deg) scale(.9,.8)`,offset:.9,opacity:1},{transform:`translate(-50%,${h-21}px) rotate(145deg) scale(.9,.8)`,opacity:0}],{duration:1900,fill:'forwards'});
+  setTimeout(()=>beep(2100,.03,'square',.03),570);setTimeout(()=>beep(1900,.03,'square',.02),1000);
   an.onfinish=()=>k.remove()}
 function led(){const L=$id('led');L.classList.toggle('typing',!!typed);L.textContent=typed?(typed.length===1?typed+'_':typed):mode?pad2(sel+1):(sel===0?'ON':'OF')}
 function announce(){$id('sr').textContent=mode?(mode+' game '+(sel+1)+' of '+count()+': '+curGame().name+', '+curGame().cat):('Mode '+(sel+1)+' of 2: '+MODES[sel][1]+', '+MODES[sel][2])}

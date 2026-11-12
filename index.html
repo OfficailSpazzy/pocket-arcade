@@ -90,7 +90,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 @keyframes litflash{0%{filter:brightness(1.9) saturate(1.2)}100%{filter:none}}
 .retw{display:flex;flex-direction:column;align-items:center;gap:4px}
 .retw .lbl{color:#1b1a1f;font-size:6px}
-.ret{width:40px;height:26px;border-radius:2px;background:#0d0d0f;box-shadow:inset 0 5px 6px #000,0 0 0 2px #3a3a40,0 0 0 3px #c9c9d0}
+.ret{position:relative;overflow:hidden;width:40px;height:26px;border-radius:2px;background:#0d0d0f;box-shadow:inset 0 5px 6px #000,0 0 0 2px #3a3a40,0 0 0 3px #c9c9d0}
 .sw{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:0;padding:0;cursor:pointer}
 .sw .lbl{color:#1b1a1f;font-size:6px}
 .tog{position:relative;width:16px;height:26px;border-radius:3px;background:#1b1a1f;box-shadow:0 0 0 2px #3a3a40}
@@ -99,7 +99,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .coinfx{position:absolute;left:0;top:0;width:36px;height:36px;margin:-18px 0 0 -18px;z-index:6;pointer-events:none}
 .coinfx i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;font:normal 400 12px "Press Start 2P",monospace;color:#6a5a3a;background:radial-gradient(circle at 38% 32%,#f4f1ea,#c9c4b8 50%,#8a857a);box-shadow:inset 0 0 0 2px #e8e4da,inset 0 0 0 3px #8a857a,0 2px 5px rgba(0,0,0,.6);animation:cspin .3s linear infinite}
 @keyframes cspin{0%{transform:scaleX(1)}25%{transform:scaleX(.12)}50%{transform:scaleX(-1)}75%{transform:scaleX(-.12)}100%{transform:scaleX(1)}}
-.ejectc{position:absolute;left:0;top:0;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;z-index:6;pointer-events:none;background:radial-gradient(circle at 38% 32%,#f4f1ea,#c9c4b8 50%,#8a857a);box-shadow:inset 0 0 0 1.5px #e8e4da,0 2px 3px rgba(0,0,0,.6)}
+.ejectc{position:absolute;left:50%;top:0;width:20px;height:20px;border-radius:50%;z-index:6;pointer-events:none;background:radial-gradient(circle at 38% 32%,#f4f1ea,#c9c4b8 50%,#8a857a);box-shadow:inset 0 0 0 1.5px #e8e4da,0 2px 3px rgba(0,0,0,.6)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (max-height:700px){.cab{padding-bottom:9px}.marq{padding:6px 8px 13px;border-top-width:5px;border-bottom-width:5px}.marq h1{font-size:26px}.bezel{padding:6px 14px}.bz.b{display:none}.crt{margin-top:14px}.cp{padding:13px 14px 9px;gap:9px}.hb{width:42px;height:42px}.hb.red{width:54px;height:54px}.hb.wht{width:34px;height:34px;margin-top:10px}.stick{height:50px}.stick .arm{height:28px}.ab-key{height:28px}.keys{gap:7px 6px}.door{margin-top:7px;padding:5px 10px}.mech{width:50px;height:64px;padding:5px}.mt b{font-size:14px}.mt span{font-size:7px}.ret{height:20px}}
 .mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
@@ -1958,9 +1958,11 @@ function coinDrop(done){const reduce=matchMedia('(prefers-reduced-motion: reduce
   an.onfinish=()=>{coin.remove();fin()};setTimeout(()=>{if(coin.isConnected){coin.remove();fin()}},D+600)}
 function eject(btn){if(busy)return;const cab=$id('cab'),ret=$id('ret'),slit=btn.querySelector('.slit');btn.classList.remove('lit');void btn.offsetWidth;btn.classList.add('lit');
   beep(220,.05,'square',.05);noise(.06,.14,0,1500);[0,1,2].forEach(i=>beep(1400-i*200,.03,'square',.025,.12+i*.07));beep(140,.06,'triangle',.12,.36);
-  if(!cab.animate||matchMedia('(prefers-reduced-motion: reduce)').matches)return;const c=cab.getBoundingClientRect(),s2=slit.getBoundingClientRect(),r2=ret.getBoundingClientRect();
-  const x=s2.left-c.left+s2.width/2,y0=s2.top-c.top+s2.height*.7,y1=r2.top-c.top+r2.height/2;const k=$('div','ejectc',cab);
-  const an=k.animate([{transform:`translate(${x}px,${y0}px) scale(.2,.6)`,opacity:0},{transform:`translate(${x}px,${y0+4}px) scale(.9)`,opacity:1,offset:.2},{transform:`translate(${x}px,${y1}px) scale(.9)`,opacity:1,offset:.55},{transform:`translate(${x}px,${y1-5}px) scale(.9)`,offset:.68},{transform:`translate(${x}px,${y1}px) scale(.9)`,opacity:1,offset:.8},{transform:`translate(${x}px,${y1+2}px) scale(.7,.4)`,opacity:0}],{duration:700,easing:'ease-in',fill:'forwards'});
+  if(!cab.animate||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  // the coin drops out of the chute inside the coin return cup, rattles, then sits there a moment
+  ret.querySelectorAll('.ejectc').forEach(n=>n.remove());const k=$('div','ejectc',ret),h=ret.clientHeight;
+  const an=k.animate([{transform:'translate(-50%,-26px) rotate(0deg) scale(.9)',opacity:1},{transform:`translate(-50%,${h-21}px) rotate(80deg) scale(.9)`,offset:.3,easing:'ease-out'},{transform:`translate(-50%,${h-27}px) rotate(110deg) scale(.9)`,offset:.42,easing:'ease-in'},{transform:`translate(-50%,${h-21}px) rotate(130deg) scale(.9,.8)`,offset:.52},{transform:`translate(-50%,${h-23}px) rotate(140deg) scale(.9)`,offset:.58},{transform:`translate(-50%,${h-21}px) rotate(145deg) scale(.9,.8)`,offset:.64,opacity:1},{transform:`translate(-50%,${h-21}px) rotate(145deg) scale(.9,.8)`,offset:.9,opacity:1},{transform:`translate(-50%,${h-21}px) rotate(145deg) scale(.9,.8)`,opacity:0}],{duration:1900,fill:'forwards'});
+  setTimeout(()=>beep(2100,.03,'square',.03),570);setTimeout(()=>beep(1900,.03,'square',.02),1000);
   an.onfinish=()=>k.remove()}
 function led(){const L=$id('led');L.classList.toggle('typing',!!typed);L.textContent=typed?(typed.length===1?typed+'_':typed):mode?pad2(sel+1):(sel===0?'ON':'OF')}
 function announce(){$id('sr').textContent=mode?(mode+' game '+(sel+1)+' of '+count()+': '+curGame().name+', '+curGame().cat):('Mode '+(sel+1)+' of 2: '+MODES[sel][1]+', '+MODES[sel][2])}
