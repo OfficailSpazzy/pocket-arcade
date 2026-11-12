@@ -767,7 +767,7 @@ reg('slice','Fruit Slice','Arcade','Swipe across the fruit to slice it. Slice th
   const cut=(p,q)=>{const len=Math.hypot(q.x-p.x,q.y-p.y);if(len<3)return;if(len>14&&time-lastWhoosh>.18){lastWhoosh=time;noise(.14,.07,0,3200)}
     for(const o of items){const rr=o.bomb?17:FR[o.k].r;if(o.cut||segDist(p,q,o)>rr)continue;o.cut=true;const ang=Math.atan2(q.y-p.y,q.x-p.x);
       if(o.bomb){lives--;flash=.8;shake=.35;SFX.boom();for(let i=0;i<40;i++){const a=Math.random()*6.283,s=60+Math.random()*260;drops.push({x:o.x,y:o.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:.7,c:i%2?'#ffd84a':'#ff5d3a',s:2+Math.random()*3,chunk:false})}
-        pops.push({x:clamp(o.x,60,W-60),y:o.y,t:lives>0?'BOMB!':'',s:lives>0?(lives+(lives>1?' lives left':' life left')):'',l:1,c:'#ff5d5d'});if(lives<=0)dead=1;return}
+        if(lives<=0)dead=1;return}
       const f=FR[o.k];sc++;ctx.score(sc);stroke.push({x:o.x,y:o.y});const nx=-Math.sin(ang),ny=Math.cos(ang);
       halves.push({x:o.x+nx*2,y:o.y+ny*2,vx:o.vx*.6+nx*80+Math.cos(ang)*30,vy:o.vy*.5+ny*80-40,a:ang+Math.PI,va:2+Math.random()*2,k:o.k},{x:o.x-nx*2,y:o.y-ny*2,vx:o.vx*.6-nx*80+Math.cos(ang)*30,vy:o.vy*.5-ny*80-40,a:ang,va:-2-Math.random()*2,k:o.k});
       decals.push({x:o.x,y:o.y,a:ang,s:f.r/15,img:f.splats[R(3)],l:4.5});if(decals.length>24)decals.shift();
