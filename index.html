@@ -402,22 +402,63 @@ reg('flap','Flap','Arcade','Tap or press space to flap. Fly the duck through the
     else{g.fillStyle='rgba(20,50,25,.75)';g.font=FONT(16,700);g.textAlign='center';g.fillText('Tap to start',W/2,H/2+56)}});
 });
 
-reg('defender','Star Defender','Arcade','Drag or use the arrow keys to steer. Your ship fires on its own. Stop the invaders reaching the ground.',ctx=>{
-  const W=320,H=440,{cv,g}=ctx.canvas(W,H),p=ctx.follow(cv,W/2);let inv=[],bul=[],eb=[],dir=1,wave=0,sc=0,lives=3,ft=0,hitT=0;
-  const mk=()=>{wave++;inv=[];for(let r=0;r<4;r++)for(let c=0;c<7;c++)inv.push({x:40+c*36,y:44+r*28,c:r});dir=1};mk();ctx.info('Lives 3');
-  ctx.loop(dt=>{if(ctx.held.left)p.x-=320*dt;if(ctx.held.right)p.x+=320*dt;p.x=clamp(p.x,14,W-14);
-    ft-=dt;if(ft<=0){ft=.34;bul.push({x:p.x,y:H-40})}hitT-=dt;
+reg('defender','Star Defender','Arcade','Drag or use the arrow keys to steer. Your fighter fires on its own. Stop the invaders reaching the ground.',ctx=>{
+  const W=320,H=440,SY=H-30,{cv,g}=ctx.canvas(W,H),p=ctx.follow(cv,W/2);let inv=[],bul=[],eb=[],dir=1,wave=0,sc=0,lives=3,ft=0,hitT=0,t=0,parts=[],bank=0,lastX=W/2,banner=0;
+  const ROW=['#ff5d7a','#ff9f43','#b48cff','#2fd6b5'];
+  const stars=Array.from({length:70},()=>({x:Math.random()*W,y:Math.random()*H,z:Math.random()}));
+  const mk=()=>{wave++;inv=[];for(let r=0;r<4;r++)for(let c=0;c<7;c++)inv.push({x:40+c*36,y:44+r*28,c:r});dir=1;banner=1.6};mk();
+  const boom=(x,y,c,n)=>{for(let i=0;i<n;i++){const a=Math.random()*7,s=40+Math.random()*170;parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:.6,c})}};
+  const laser=()=>beep(1400,.07,'square',.025,0,500);
+  const ship=(x,y)=>{g.save();g.translate(x,y);g.rotate(bank*.25);
+    // engine glow
+    const fl=6+Math.sin(t*40)*2;g.fillStyle='rgba(90,169,255,.55)';g.beginPath();g.ellipse(-5,11+fl/2,3,fl,0,0,7);g.ellipse(5,11+fl/2,3,fl,0,0,7);g.fill();
+    // swept wings with cannon tips
+    g.fillStyle='#8c97b0';g.beginPath();g.moveTo(-3,-2);g.lineTo(-18,8);g.lineTo(-18,12);g.lineTo(-3,8);g.closePath();g.moveTo(3,-2);g.lineTo(18,8);g.lineTo(18,12);g.lineTo(3,8);g.closePath();g.fill();
+    g.fillStyle='#d64545';g.fillRect(-18,4,2,6);g.fillRect(16,4,2,6);g.fillStyle='#c9d2e6';g.fillRect(-19.5,-2,2,10);g.fillRect(17.5,-2,2,10);
+    // fuselage
+    const hull=g.createLinearGradient(-6,0,6,0);hull.addColorStop(0,'#aab4cc');hull.addColorStop(.5,'#f1f4fb');hull.addColorStop(1,'#8f9ab3');
+    g.fillStyle=hull;g.beginPath();g.moveTo(0,-20);g.lineTo(5,-6);g.lineTo(6,10);g.lineTo(-6,10);g.lineTo(-5,-6);g.closePath();g.fill();
+    g.fillStyle='#d64545';g.fillRect(-1,-12,2,10);
+    g.fillStyle='#1d2a44';g.beginPath();g.ellipse(0,-4,2.6,4.5,0,0,7);g.fill();g.fillStyle='rgba(140,200,255,.7)';g.fillRect(-.8,-7,1.3,3);
+    g.restore()};
+  const alien=(v)=>{const c=ROW[v.c],wob=Math.sin(t*6+v.x*.1)*1.5;g.save();g.translate(v.x,v.y);g.shadowColor=c;g.shadowBlur=8;g.fillStyle=c;
+    if(v.c===0){g.beginPath();g.ellipse(0,1,11,5,0,0,7);g.fill();g.fillStyle='#ffd1db';g.beginPath();g.ellipse(0,-3,5,4,0,Math.PI,0);g.fill()}
+    else if(v.c===1){g.beginPath();g.moveTo(0,-7);g.lineTo(10,0);g.lineTo(0,7);g.lineTo(-10,0);g.closePath();g.fill();g.fillRect(-12,-2+wob,3,6);g.fillRect(9,-2-wob,3,6)}
+    else if(v.c===2){g.beginPath();g.arc(0,0,7,0,7);g.fill();g.fillRect(-11,-1,22,3);g.fillRect(-2,5,1.5,4+wob);g.fillRect(1,5,1.5,4-wob)}
+    else{g.beginPath();g.moveTo(-10,-5);g.lineTo(10,-5);g.lineTo(6,6);g.lineTo(-6,6);g.closePath();g.fill()}
+    g.shadowBlur=0;g.fillStyle='#120c1f';g.fillRect(-4,-1,3,3);g.fillRect(1,-1,3,3);g.restore()};
+  ctx.loop(dt=>{t+=dt;banner-=dt;if(ctx.held.left)p.x-=320*dt;if(ctx.held.right)p.x+=320*dt;p.x=clamp(p.x,20,W-20);
+    bank=clamp(bank+((p.x-lastX)/Math.max(dt,.001)/400-bank)*Math.min(1,dt*10),-1,1);lastX=p.x;
+    ft-=dt;if(ft<=0){ft=.34;bul.push({x:p.x-17,y:SY-6},{x:p.x+17,y:SY-6});laser()}hitT-=dt;
     const sp=(22+wave*7)*(1+(28-inv.length)*.04);let edge=false;inv.forEach(i=>{i.x+=dir*sp*dt;if(i.x<14||i.x>W-14)edge=true});
     if(edge){dir=-dir;inv.forEach(i=>{i.x+=dir*4;i.y+=12})}
-    if(inv.length&&Math.random()<dt*(.5+wave*.2)){const s=inv[R(inv.length)];eb.push({x:s.x,y:s.y+8})}
+    if(inv.length&&Math.random()<dt*(.5+wave*.2)){const s=inv[R(inv.length)];eb.push({x:s.x,y:s.y+8});beep(200,.08,'square',.025,0,120)}
     bul.forEach(b=>b.y-=420*dt);eb.forEach(b=>b.y+=190*dt);
-    for(const b of bul)for(let i=0;i<inv.length;i++){const v=inv[i];if(Math.abs(b.x-v.x)<13&&Math.abs(b.y-v.y)<11){inv.splice(i,1);b.y=-99;sc+=10;ctx.score(sc);break}}
-    for(const b of eb)if(hitT<=0&&Math.abs(b.x-p.x)<13&&Math.abs(b.y-(H-28))<10){b.y=H+99;lives--;hitT=1;ctx.info('Lives '+lives);if(!lives)return ctx.over('Ship lost')}
-    if(inv.some(v=>v.y>H-56))return ctx.over('Invaded');
-    bul=bul.filter(b=>b.y>-10);eb=eb.filter(b=>b.y<H+10);if(!inv.length)mk();
-    cls(g,W,H);inv.forEach(v=>{g.fillStyle=PAL[v.c];g.fillRect(v.x-10,v.y-7,20,14);g.fillStyle=C.bg;g.fillRect(v.x-6,v.y-3,4,4);g.fillRect(v.x+2,v.y-3,4,4)});
-    g.fillStyle=C.yel;bul.forEach(b=>g.fillRect(b.x-1.5,b.y-6,3,10));g.fillStyle=C.red;eb.forEach(b=>g.fillRect(b.x-2,b.y-5,4,10));
-    if(hitT<=0||Math.floor(hitT*10)%2){g.fillStyle=C.ink;g.beginPath();g.moveTo(p.x,H-40);g.lineTo(p.x+13,H-18);g.lineTo(p.x-13,H-18);g.fill()}});
+    for(const b of bul)for(let i=0;i<inv.length;i++){const v=inv[i];if(Math.abs(b.x-v.x)<13&&Math.abs(b.y-v.y)<11){boom(v.x,v.y,ROW[v.c],12);inv.splice(i,1);b.y=-99;sc+=10;ctx.score(sc);beep(300,.12,'sawtooth',.045,0,60);break}}
+    for(const b of eb)if(hitT<=0&&Math.abs(b.x-p.x)<14&&Math.abs(b.y-SY)<14){b.y=H+99;lives--;hitT=1.2;boom(p.x,SY,'#5aa9ff',20);beep(160,.4,'sawtooth',.07,0,40);if(!lives){boom(p.x,SY,'#ffd84a',30);return ctx.over('Fighter lost')}}
+    if(inv.some(v=>v.y>H-56)){beep(140,.6,'sawtooth',.07,0,40);return ctx.over('Invaded')}
+    bul=bul.filter(b=>b.y>-10);eb=eb.filter(b=>b.y<H+10);if(!inv.length){[523,659,784,1047,1319].forEach((f,i)=>beep(f,.1,'square',.05,i*.08));mk()}
+    parts.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.vx*=.96;q.vy*=.96;q.l-=dt});parts=parts.filter(q=>q.l>0);
+    // deep space
+    g.fillStyle='#05040c';g.fillRect(0,0,W,H);
+    const neb=g.createRadialGradient(80,130,10,80,130,190);neb.addColorStop(0,'rgba(120,60,200,.35)');neb.addColorStop(1,'rgba(120,60,200,0)');g.fillStyle=neb;g.fillRect(0,0,W,H);
+    const neb2=g.createRadialGradient(270,330,10,270,330,160);neb2.addColorStop(0,'rgba(40,140,200,.25)');neb2.addColorStop(1,'rgba(40,140,200,0)');g.fillStyle=neb2;g.fillRect(0,0,W,H);
+    stars.forEach(s=>{s.y+=(20+s.z*90)*dt;if(s.y>H){s.y=0;s.x=Math.random()*W}g.fillStyle=`rgba(230,235,255,${.3+s.z*.7})`;g.fillRect(s.x,s.y,s.z>.8?2:1,s.z>.8?3:1)});
+    // planet horizon
+    g.fillStyle='rgba(47,214,181,.08)';g.beginPath();g.ellipse(W/2,H+250,330,270,0,0,7);g.fill();g.strokeStyle='rgba(47,214,181,.35)';g.lineWidth=1.5;g.stroke();
+    inv.forEach(alien);
+    // player lasers: red bolts with glow
+    g.shadowColor='#ff3b3b';g.shadowBlur=10;g.fillStyle='#ffd0d0';bul.forEach(b=>g.fillRect(b.x-1,b.y-9,2,12));g.shadowBlur=0;
+    g.fillStyle='rgba(255,59,59,.6)';bul.forEach(b=>g.fillRect(b.x-2,b.y-10,4,14));
+    // enemy shots: green plasma
+    g.shadowColor='#7dff6b';g.shadowBlur=10;g.fillStyle='#c8ffb8';eb.forEach(b=>{g.beginPath();g.ellipse(b.x,b.y,2.5,5,0,0,7);g.fill()});g.shadowBlur=0;
+    parts.forEach(q=>{g.globalAlpha=Math.max(0,q.l*1.6);g.fillStyle=q.c;g.fillRect(q.x-1.5,q.y-1.5,3,3)});g.globalAlpha=1;
+    if(hitT<=0||Math.floor(hitT*12)%2){ship(p.x,SY)}
+    if(hitT>.9){g.strokeStyle='rgba(90,169,255,.7)';g.lineWidth=2;g.beginPath();g.arc(p.x,SY-2,24+(1.2-hitT)*30,0,7);g.stroke()}
+    // HUD: wave and remaining fighters
+    g.fillStyle=C.mut;g.font=FONT(11,700);g.textAlign='left';g.fillText('WAVE '+wave,10,18);
+    {const bk=bank;bank=0;for(let i=0;i<lives;i++){g.save();g.translate(W-16-i*22,15);g.scale(.5,.5);ship(0,0);g.restore()}bank=bk}
+    if(banner>0){g.globalAlpha=Math.min(1,banner);g.fillStyle=C.ink;g.font='400 26px "Bungee",Impact,sans-serif';g.textAlign='center';g.fillText('WAVE '+wave,W/2,H/2+40);g.globalAlpha=1}});
 });
 
 reg('dodge','Dodge','Arcade','Drag or use the arrow keys. Stay clear of the falling blocks for as long as you can.',ctx=>{
