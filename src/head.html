@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#15101f">
+<meta name="theme-color" content="#120a24">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Arcade">
+<meta name="apple-mobile-web-app-title" content="Spazzy's">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<title>Pocket Arcade</title>
+<title>Spazzy's Arcade</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
@@ -31,7 +31,53 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 [hidden]{display:none!important}
 
 /* ---------- home ---------- */
-#home{max-width:1040px;margin:0 auto;padding:calc(22px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:18px}
+#home{min-height:100%;display:flex;align-items:center;justify-content:center;padding:calc(12px + env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));background:radial-gradient(ellipse at 50% -10%,#3a1a6a 0%,#140a2c 45%,#07050f 100%)}
+.cab{position:relative;width:min(430px,100%);border-radius:22px 22px 14px 14px;padding:10px 12px 12px;background:linear-gradient(90deg,#160c2c,#2b1850 10%,#2b1850 90%,#160c2c);box-shadow:0 0 0 2px #ff3fa4,0 0 18px rgba(255,63,164,.5),0 0 0 6px #120a24,0 0 0 8px #2ee6f0,0 0 26px rgba(46,230,240,.4),0 30px 60px rgba(0,0,0,.6)}
+.cab.zoom{transition:transform .5s cubic-bezier(.6,0,.9,.4),opacity .45s ease-in .05s;transform:scale(3.4);opacity:0}
+.marq{position:relative;overflow:hidden;border-radius:14px;padding:9px 10px 8px;text-align:center;background:linear-gradient(180deg,#ff6cc0,#ff2d7a 50%,#b8126f);box-shadow:inset 0 3px 0 rgba(255,255,255,.45),inset 0 -4px 0 rgba(0,0,0,.25),0 0 22px rgba(255,63,164,.55)}
+.marq::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.4) 48%,transparent 60%);transform:translateX(-120%);animation:shine 5s ease-in-out infinite;pointer-events:none}
+@keyframes shine{0%,70%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+.marq h1{margin:0;font:400 clamp(28px,9.4vw,42px)/1 var(--display);color:#fff6cf;letter-spacing:.02em;text-shadow:0 0 6px #fff,0 0 16px #ffd23f,0 3px 0 #7a0c4c;animation:flick 7s infinite}
+.marq h1 span{display:block;margin-top:5px;font:400 clamp(10px,3.2vw,13px)/1 "Press Start 2P",monospace;letter-spacing:.55em;padding-left:.55em;color:#d8fbff;text-shadow:0 0 6px #2ee6f0,0 0 12px #2ee6f0,0 2px 0 #0b4a5a}
+@keyframes flick{0%,90%,100%{opacity:1}91%{opacity:.5}92%{opacity:1}95%{opacity:.7}96%{opacity:1}}
+.bezel{margin-top:10px;padding:11px;border-radius:16px;background:linear-gradient(#0d0a14,#1d1630);box-shadow:inset 0 0 0 2px #2c2440,inset 0 8px 20px rgba(0,0,0,.8)}
+.crt{position:relative;border-radius:20px/24px;overflow:hidden;background:#000;box-shadow:0 0 0 3px #000,0 0 26px rgba(46,230,240,.28)}
+#scr{display:block;width:100%;aspect-ratio:4/3;touch-action:none;cursor:pointer}
+.glass{position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(ellipse at 28% 12%,rgba(255,255,255,.16),transparent 42%);box-shadow:inset 0 0 44px rgba(0,0,0,.85),inset 0 0 8px rgba(0,0,0,.9)}
+.deck{margin-top:12px;padding:12px 12px 14px;border-radius:14px;background:linear-gradient(180deg,#3d2670,#22143c);box-shadow:inset 0 3px 0 rgba(255,255,255,.13),inset 0 -6px 0 rgba(0,0,0,.35);display:flex;flex-direction:column;gap:14px}
+.row1{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.joy{display:flex;align-items:center;gap:8px}
+.ab{border:0;border-radius:50%;padding:0;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:transform .05s,box-shadow .05s;color:#fff}
+.ab:active,.ab.down{transform:translateY(4px)}
+.ab-dir{width:54px;height:54px;font-size:18px;background:radial-gradient(circle at 35% 30%,#a8ecff,#2a9fd6 55%,#156594);box-shadow:0 6px 0 #0b3f60,0 8px 10px rgba(0,0,0,.5)}
+.ab-dir:active,.ab-dir.down{box-shadow:0 2px 0 #0b3f60,0 3px 4px rgba(0,0,0,.5)}
+.stick{position:relative;width:46px;height:62px}
+.stick .base{position:absolute;bottom:0;left:2px;width:42px;height:16px;border-radius:50%;background:radial-gradient(#3a3450,#0d0a14);box-shadow:0 3px 0 #000}
+.stick .arm{position:absolute;left:20px;bottom:7px;width:6px;height:40px;border-radius:3px;background:linear-gradient(90deg,#8a8aa0,#ececf6,#70708a);transform-origin:50% 100%;transition:transform .12s}
+.stick .knob{position:absolute;left:-10px;top:-16px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffa3b1,#ff2d55 55%,#a00f2c);box-shadow:0 3px 4px rgba(0,0,0,.5)}
+.stick.l .arm{transform:rotate(-26deg)}.stick.r .arm{transform:rotate(26deg)}
+.ab-start{width:78px;height:78px;font:400 11px "Press Start 2P",monospace;background:radial-gradient(circle at 35% 30%,#ffb6b6,#ff2d55 55%,#a00f2c);box-shadow:0 7px 0 #640a1c,0 9px 14px rgba(0,0,0,.55),0 0 16px rgba(255,45,85,.5);animation:pulse 1.6s ease-in-out infinite}
+.ab-start:active,.ab-start.down{box-shadow:0 2px 0 #640a1c,0 3px 6px rgba(0,0,0,.5),0 0 30px rgba(255,45,85,.95)}
+@keyframes pulse{50%{box-shadow:0 7px 0 #640a1c,0 9px 14px rgba(0,0,0,.55),0 0 32px rgba(255,45,85,.9)}}
+.row2{display:flex;gap:12px;align-items:center}
+.ledbox{display:flex;flex-direction:column;align-items:center;gap:6px}
+.lbl{font:400 7px "Press Start 2P",monospace;color:#c9b8ff;letter-spacing:.1em}
+.led{min-width:74px;padding:9px 6px;border-radius:8px;background:#0a0306;box-shadow:inset 0 0 0 2px #2a1018,inset 0 0 12px rgba(255,40,40,.25);font:400 22px "Press Start 2P",monospace;color:#ff3b3b;text-shadow:0 0 8px #ff3b3b;text-align:center}
+.led.typing{color:#ffd23f;text-shadow:0 0 8px #ffd23f}
+.led.err{animation:shake .32s}
+.clr{border:0;border-radius:6px;padding:7px 12px;background:linear-gradient(#ece7f7,#b9b0d0);box-shadow:0 4px 0 #6e6488;font:400 8px "Press Start 2P",monospace;color:#2a2140;cursor:pointer}
+.clr:active{transform:translateY(3px);box-shadow:0 1px 0 #6e6488}
+.keys{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:9px 6px}
+.ab-key{width:100%;max-width:44px;aspect-ratio:1;justify-self:center;font:400 12px "Press Start 2P",monospace;color:#3a2a00;background:radial-gradient(circle at 35% 30%,#fff5b8,#ffd23f 55%,#c49800);box-shadow:0 5px 0 #765a00,0 6px 8px rgba(0,0,0,.5)}
+.ab-key:active,.ab-key.down{box-shadow:0 1px 0 #765a00}
+.coin{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px;border-radius:10px;background:#120a24;box-shadow:inset 0 0 0 2px #2c2440;position:relative}
+.slot{width:8px;height:24px;border-radius:3px;background:#000;box-shadow:0 0 0 3px #3a3050,0 0 10px #ff9f1c}
+.coin span{font:400 9px "Press Start 2P",monospace;color:#ff9f1c;text-shadow:0 0 6px #ff9f1c;animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+#hmute{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid #3a3050;border-radius:8px;width:34px;height:30px;padding:0;font-size:14px;line-height:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){.marq::after,.marq h1,.ab-start,.coin span{animation:none}}
+@media (max-height:700px){.ab-dir{width:46px;height:46px}.ab-start{width:66px;height:66px}.keys{gap:7px 6px}.ab-key{max-width:38px}.marq h1{font-size:28px}}
 .mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
 .mast h1{font:400 clamp(30px,9vw,58px)/.95 var(--display);margin:0;letter-spacing:.01em;text-wrap:balance}
 .mast h1 span{color:var(--puz)}
@@ -132,20 +178,30 @@ canvas.cv{display:block;background:#0e0a17;border:1px solid var(--line);border-r
 </head>
 <body>
 <main id="home">
-  <header class="mast">
-    <h1>Pocket <span>Arcade</span></h1>
-    <p id="tag"></p>
-  </header>
-  <div class="tools">
-    <input id="q" type="search" placeholder="Find a game" autocomplete="off" aria-label="Find a game">
-    <button class="btn pri" id="rand" type="button">Random game</button>
+  <div class="cab" id="cab">
+    <div class="marq"><h1>SPAZZY'S<span>ARCADE</span></h1></div>
+    <div class="bezel"><div class="crt"><canvas id="scr" aria-label="Arcade screen. Swipe to change game, tap to start."></canvas><div class="glass"></div></div></div>
+    <div class="deck">
+      <div class="row1">
+        <div class="joy">
+          <button class="ab ab-dir" id="prev" type="button" aria-label="Previous game">&#9664;</button>
+          <div class="stick" id="stick" aria-hidden="true"><div class="base"></div><div class="arm"><div class="knob"></div></div></div>
+          <button class="ab ab-dir" id="next" type="button" aria-label="Next game">&#9654;</button>
+        </div>
+        <div class="start-wrap"><button class="ab ab-start" id="start" type="button" aria-label="Start game">START</button></div>
+      </div>
+      <div class="row2">
+        <div class="ledbox"><span class="lbl">GAME NO.</span><div class="led" id="led">01</div><button class="clr" id="clr" type="button" aria-label="Clear number">CLR</button></div>
+        <div class="keys" id="keys"></div>
+      </div>
+    </div>
+    <div class="coin"><div class="slot"></div><span>INSERT COIN</span><div class="slot"></div><button id="hmute" type="button" aria-label="Sound on">&#128266;</button></div>
   </div>
-  <div class="chips" id="chips"></div>
-  <div class="shelf" id="shelf"></div>
+  <p id="sr" class="sr" aria-live="polite"></p>
 </main>
 <section id="game" hidden>
   <div id="bar">
-    <button id="back" type="button">&larr; Games</button>
+    <button id="back" type="button">&larr; Arcade</button>
     <div id="gname"></div>
     <button id="mute" type="button" aria-label="Sound on">&#128266;</button>
     <div class="stat" id="sbox"><span id="slab">Score</span><b id="score">0</b></div>
