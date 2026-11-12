@@ -68,13 +68,22 @@ reg('sudoku','Sudoku','Puzzle','Tap a square, then a number. Fill every row, col
   ctx.every(1000,()=>ctx.score(++t));draw();
 },{low:true,sl:'Seconds'});
 
-reg('lights','Lights Out','Puzzle','Tapping a light flips it and its four neighbours. Turn every light off in as few moves as you can.',ctx=>{
-  const N=5,b=Array(25).fill(false);let mv=0;const cs=ctx.grid(N,25,360,10);boardBox(cs,'#120d1d',12);
+reg('lights','Lights Out','Puzzle','Tapping a light flips it and its four neighbours. Turn every light off in as few moves as you can. Stuck? HINT shows the next light to press.',ctx=>{
+  const N=5,b=Array(25).fill(false);let mv=0,hints=0,hintAt=-1;const cs=ctx.grid(N,25,360,10);boardBox(cs,'#120d1d',12);
   const flip=i=>{const x=i%N,y=(i/N)|0;[[0,0],[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{const a=x+dx,c=y+dy;if(a>=0&&c>=0&&a<N&&c<N)b[c*N+a]=!b[c*N+a]})};
+  // shortest set of presses that clears the board (linear algebra over on/off)
+  const solve=()=>{const A=[];for(let i=0;i<25;i++){const row=Array(26).fill(0),x=i%N,y=(i/N)|0;[[0,0],[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{const a=x+dx,c=y+dy;if(a>=0&&c>=0&&a<N&&c<N)row[c*N+a]=1});row[25]=b[i]?1:0;A.push(row)}
+    const piv=[];let r=0;for(let c=0;c<25&&r<25;c++){let p=-1;for(let k=r;k<25;k++)if(A[k][c]){p=k;break}if(p<0)continue;[A[r],A[p]]=[A[p],A[r]];for(let k=0;k<25;k++)if(k!==r&&A[k][c])for(let j=c;j<26;j++)A[k][j]^=A[r][j];piv.push(c);r++}
+    for(let k=r;k<25;k++)if(A[k][25])return null;const free=[...Array(25).keys()].filter(c=>!piv.includes(c));let best=null;
+    for(let m=0;m<(1<<free.length);m++){const x=Array(25).fill(0);free.forEach((f,k)=>x[f]=(m>>k)&1);for(let k=r-1;k>=0;k--){const c=piv[k];let v=A[k][25];for(let j=c+1;j<25;j++)v^=A[k][j]&x[j];x[c]=v}const w=x.reduce((s,v)=>s+v,0);if(!best||w<best.w)best={x,w}}return best};
   const draw=()=>{cs.forEach((c,i)=>{c.style.borderRadius='50%';c.style.border='0';c.style.transition='background .15s,box-shadow .15s';
-    c.style.background=b[i]?'radial-gradient(circle at 40% 35%,#fffbe0,#ffd84a 45%,#d4920f)':'radial-gradient(circle at 40% 35%,#3a3152,#1d1730 70%)';c.style.boxShadow=b[i]?'0 0 22px rgba(255,216,74,.65)':'inset 0 2px 4px rgba(0,0,0,.6)'});ctx.info('Lights on '+b.filter(Boolean).length)};
-  do{for(let k=0;k<10;k++)flip(R(25))}while(!b.some(x=>x));
-  cs.forEach((c,i)=>{c.setAttribute('aria-label','Light '+(i+1));ctx.on(c,'click',()=>{if(ctx.paused)return;flip(i);ctx.score(++mv);beep(b[i]?620:420,.05,'square',.04);anim(c,'pop');draw();if(!b.some(x=>x))ctx.over('All dark',undefined,'win')})});draw();
+      c.style.background=b[i]?'radial-gradient(circle at 40% 35%,#fffbe0,#ffd84a 45%,#d4920f)':'radial-gradient(circle at 40% 35%,#3a3152,#1d1730 70%)';
+      c.style.boxShadow=(b[i]?'0 0 22px rgba(255,216,74,.65)':'inset 0 2px 4px rgba(0,0,0,.6)')+(i===hintAt?',0 0 0 4px #2ee6b6,0 0 18px #2ee6b6':'')});
+    const s=solve();ctx.info('LIGHTS ON '+b.filter(Boolean).length+'   PAR '+par+(hints?'   HINTS '+hints:'')+(s?'   ':'')+(s&&b.some(x=>x)?s.w+' TO GO':''))};
+  do{b.fill(false);for(let k=0;k<10;k++)flip(R(25))}while(!b.some(x=>x));const par=solve().w;
+  cs.forEach((c,i)=>{c.setAttribute('aria-label','Light '+(i+1));ctx.on(c,'click',()=>{if(ctx.paused)return;flip(i);ctx.score(++mv);if(i===hintAt)hintAt=-1;beep(b[i]?620:420,.05,'square',.04);anim(c,'pop');draw();if(!b.some(x=>x))ctx.over(mv<=par&&!hints?'Perfect solve':'All dark',undefined,'win')})});
+  ctx.btn(ctx.row(),'Hint',()=>{const s=solve();if(!s)return;const i=s.x.findIndex(v=>v);if(i<0)return;hintAt=i;hints++;beep(880,.06,'square',.04);beep(1175,.08,'square',.04,.06);draw();anim(cs[i],'pop')});
+  draw();
 },{low:true,sl:'Moves'});
 
 reg('slide','Slide 15','Puzzle','Tap a tile next to the gap to slide it. Put the numbers in order, 1 to 15, with the gap last.',ctx=>{
