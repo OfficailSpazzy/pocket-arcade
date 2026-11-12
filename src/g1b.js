@@ -97,11 +97,15 @@ reg('stack','Stack','Arcade','Tap or press space to drop each block. Whatever ha
     if(ptxt>0){g.globalAlpha=ptxt;g.fillStyle=C.yel;g.font=FONT(18,700);g.fillText(perfect>1?'PERFECT x'+perfect:'PERFECT',W/2,88);g.globalAlpha=1}});
 });
 
-reg('racer','Lane Racer','Arcade','Tap the left or right side, or use the arrow keys, to change lanes and avoid traffic.',ctx=>{
-  const W=300,H=440,LX=[50,150,250],{cv,g}=ctx.canvas(W,H);let lane=1,px=150,cars=[],gap=0,sc=0,road=0,tilt=0,dead=0,parts=[];
+reg('racer','Lane Racer','Arcade','Drag left or right anywhere on the screen, or use the arrow keys, to steer through traffic. Pass cars by a hair for close-call points, and thread the gap between two cars for a split.',ctx=>{
+  const W=300,H=440,LX=[50,150,250],PY=H-90,{cv,g}=ctx.canvas(W,H);let px=150,tx=150,cars=[],gap=0,passed=0,sc=0,road=0,tilt=0,dead=0,parts=[],pops=[],combo=0,comboT=0,gid=0,drag=null,lastPx=150,streaks=[];
   const COLS=['#ff5d7a','#5aa9ff','#2fd6b5','#b48cff','#ff9f43','#e6ebf7'];
-  const go=d=>{if(dead)return;const n=clamp(lane+d,0,2);if(n!==lane){lane=n;tilt=d;beep(500,.08,'triangle',.05,0,300)}};
-  ctx.on(cv,'pointerdown',e=>{e.preventDefault();go(cv.pos(e).x<W/2?-1:1)});ctx.keys(k=>{if(k==='left')go(-1);if(k==='right')go(1)});
+  const skip=e=>e.target.closest&&e.target.closest('#bar,#over,button,a,input');
+  ctx.on(window,'pointerdown',e=>{if(skip(e))return;if(e.cancelable)e.preventDefault();drag={fx:e.clientX,px:tx,id:e.pointerId}},{passive:false});
+  ctx.on(window,'pointermove',e=>{if(!drag||e.pointerId!==drag.id||ctx.paused)return;const r=cv.getBoundingClientRect();tx=clamp(drag.px+(e.clientX-drag.fx)*W/r.width*1.2,24,W-24)});
+  const end=e=>{if(drag&&e.pointerId===drag.id)drag=null};ctx.on(window,'pointerup',end);ctx.on(window,'pointercancel',end);
+  const style=(label,pts,x,col)=>{combo=comboT>0?Math.min(combo+1,5):1;comboT=3;const tot=pts*combo;sc+=tot;ctx.score(sc);
+    pops.push({x,y:PY-14,t:label+(combo>1?' x'+combo:''),s:'+'+tot,l:1.1,c:col});ctx.info(combo>1?'Style combo x'+combo:'')};
   const car=(x,y,col,me,tl)=>{g.save();g.translate(x,y+22);g.rotate(tl*.12);
     g.fillStyle='rgba(0,0,0,.35)';rrect(g,-17,-20,36,46,8);g.fill();
     g.fillStyle='#111';g.fillRect(-19,-15,4,10);g.fillRect(15,-15,4,10);g.fillRect(-19,8,4,10);g.fillRect(15,8,4,10);
@@ -109,18 +113,29 @@ reg('racer','Lane Racer','Arcade','Tap the left or right side, or use the arrow 
     g.fillStyle='#1d2a44';rrect(g,-12,me?-12:4,24,9,3);g.fill();rrect(g,-11,me?6:-12,22,6,3);g.fill();
     if(me){g.fillStyle='#1b1326';g.fillRect(-3,-22,6,44);g.fillStyle='#fff6c4';g.fillRect(-13,-23,6,3);g.fillRect(7,-23,6,3)}else{g.fillStyle='#ff4040';g.fillRect(-13,20,6,3);g.fillRect(7,20,6,3)}
     g.restore()};
-  ctx.loop(dt=>{tilt*=Math.pow(.02,dt);
-    if(!dead){const v=210+sc*5;road=(road+v*dt)%40;gap-=v*dt;if(gap<=0){gap=190;const a=R(3);cars.push({l:a,y:-50,n:true,c:R(6)});if(Math.random()<.4){cars.push({l:(a+1+R(2))%3,y:-50,c:R(6)})}}
-      px+=clamp(LX[lane]-px,-700*dt,700*dt);
-      for(const c of cars){c.y+=v*dt;if(c.y+44>H-90&&c.y<H-46&&Math.abs(LX[c.l]-px)<34){dead=1;burst(parts,px,H-68,'#ffd84a',24,200);burst(parts,px,H-68,'#ff5d5d',16,160);SFX.boom()}if(c.n&&c.y>H){c.n=false;ctx.score(++sc);beep(1000,.03,'square',.025);if(sc%10===0)SFX.ok()}}
-      cars=cars.filter(c=>c.y<H+60)}else{dead+=dt;if(dead>1)return ctx.over('Crash')}
+  ctx.loop(dt=>{comboT-=dt;if(comboT<=0&&combo){combo=0;ctx.info('')}
+    if(!dead){if(ctx.held.left)tx=clamp(tx-300*dt,24,W-24);if(ctx.held.right)tx=clamp(tx+300*dt,24,W-24);
+      const mv=clamp(tx-px,-(drag?1100:400)*dt,(drag?1100:400)*dt);px+=mv;tilt+=(clamp(mv/dt/500,-1,1)-tilt)*Math.min(1,dt*12);
+      const v=210+passed*5;road=(road+v*dt)%40;gap-=v*dt;
+      if(gap<=0){gap=190;const a=R(3),id=++gid;cars.push({l:a,y:-50,n:true,c:R(6),g:id,min:99});if(Math.random()<.4){const b=(a+1+R(2))%3;cars.push({l:b,y:-50,n:true,c:R(6),g:id,min:99})}}
+      for(const c of cars){c.y+=v*dt;const cx=LX[c.l];
+        if(c.y+44>PY&&c.y<PY+44){const edge=Math.abs(cx-px)-34;if(edge<0){dead=1;burst(parts,px,PY+22,'#ffd84a',24,200);burst(parts,px,PY+22,'#ff5d5d',16,160);SFX.boom();break}c.min=Math.min(c.min,edge);
+          const mates=cars.filter(o=>o.g===c.g&&o!==c);if(mates.length&&Math.abs(mates[0].l-c.l)===1){const lo=Math.min(cx,LX[mates[0].l]),hi=Math.max(cx,LX[mates[0].l]);if(px>lo&&px<hi)c.split=1}}
+        if(c.n&&c.y>=PY+44){c.n=false;passed++;sc++;ctx.score(sc);beep(1000,.03,'square',.02);if(passed%10===0)SFX.ok();
+          const mates=cars.filter(o=>o.g===c.g&&o!==c);
+          if(c.split&&mates.length&&mates[0].split&&!mates[0].n&&!c.g_done){c.g_done=mates[0].g_done=1;style('SPLIT',15,px,'#ffd84a');[880,1175,1568].forEach((f,i)=>beep(f,.08,'square',.05,i*.06));streaks.push({x:px,l:.5})}
+          else if(c.min<10&&!c.g_done){style(c.min<4?'INSANE':'CLOSE CALL',c.min<4?10:5,(px+LX[c.l])/2,c.min<4?'#ff7ac6':'#2fd6b5');noise(.18,.12,0,2200);beep(c.min<4?1300:900,.07,'square',.04);streaks.push({x:px,l:.4})}}}
+      cars=cars.filter(c=>c.y<H+60)}else{dead+=dt;if(dead>1)return ctx.over('Crash',undefined,'lose')}
     g.fillStyle='#2b2d3a';g.fillRect(0,0,W,H);g.fillStyle='#33364a';g.fillRect(14,0,W-28,H);
     for(let y=-40+road;y<H;y+=40){g.fillStyle=Math.floor((y-road)/40)%2?'#ff5d5d':'#f4eeff';g.fillRect(0,y,8,20);g.fillRect(W-8,y,8,20);g.fillStyle=Math.floor((y-road)/40)%2?'#f4eeff':'#ff5d5d';g.fillRect(0,y+20,8,20);g.fillRect(W-8,y+20,8,20)}
     g.fillStyle='rgba(255,255,255,.75)';for(let y=-40+road;y<H;y+=40){g.fillRect(98,y,4,22);g.fillRect(198,y,4,22)}
     cars.forEach(c=>car(LX[c.l],c.y,COLS[c.c],false,0));
-    if(!dead||Math.floor(dead*10)%2)car(px,H-90,'#ffd84a',true,tilt);
+    streaks.forEach(s=>{s.l-=dt;g.strokeStyle=`rgba(255,255,255,${Math.max(0,s.l)})`;g.lineWidth=2;for(const o of[-20,20]){g.beginPath();g.moveTo(s.x+o,PY+50);g.lineTo(s.x+o,PY+50+70*s.l*2);g.stroke()}});streaks=streaks.filter(s=>s.l>0);
+    if(!dead||Math.floor(dead*10)%2)car(px,PY,'#ffd84a',true,tilt);
     parts=drawParts(g,parts,dt,0);
-    g.fillStyle='rgba(0,0,0,.4)';rrect(g,W/2-40,8,80,26,8);g.fill();g.fillStyle='#fff';g.font=FONT(13,700);g.textAlign='center';g.fillText((210+sc*5)/2|0,W/2-8,26);g.fillStyle=C.mut;g.font=FONT(9,700);g.fillText('KM/H',W/2+22,26)});
+    pops.forEach(q=>{q.l-=dt;q.y-=50*dt;g.globalAlpha=Math.max(0,Math.min(1,q.l*1.5));g.textAlign='center';g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.6)';g.font=FONT(15,700);g.fillStyle=q.c;g.strokeText(q.t,q.x,q.y);g.fillText(q.t,q.x,q.y);g.font=FONT(13,700);g.fillStyle='#fff';g.strokeText(q.s,q.x,q.y+16);g.fillText(q.s,q.x,q.y+16)});g.globalAlpha=1;pops=pops.filter(q=>q.l>0);
+    g.fillStyle='rgba(0,0,0,.4)';rrect(g,W/2-40,8,80,26,8);g.fill();g.fillStyle='#fff';g.font=FONT(13,700);g.textAlign='center';g.fillText((210+passed*5)/2|0,W/2-8,26);g.fillStyle=C.mut;g.font=FONT(9,700);g.fillText('KM/H',W/2+22,26);
+    if(combo>1&&comboT>0){g.fillStyle='rgba(0,0,0,.4)';rrect(g,W-64,8,56,26,8);g.fill();g.fillStyle=C.yel;g.font=FONT(13,700);g.fillText('x'+combo,W-36,26);g.fillStyle='rgba(255,216,74,.8)';g.fillRect(W-60,30,48*Math.max(0,comboT)/3,2)}});
 });
 
 reg('catch','Fruit Catch','Arcade','Drag or use the arrow keys to catch the fruit in your basket. Bombs end the game. Drop three fruit and you are out.',ctx=>{
