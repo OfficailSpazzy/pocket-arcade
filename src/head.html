@@ -199,6 +199,9 @@ canvas.cv{display:block;background:#0e0a17;border:1px solid var(--line);border-r
 #oscore{margin:0;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
 #onew{margin:0;color:var(--puz);font-weight:700}
 
+/* no text selection or copy pop-up when holding buttons, tiles or the game screen */
+#home,#game,button,canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 /* ---------- in-game cabinet skin ---------- */
 #game{height:100%;display:flex;flex-direction:column;padding:calc(6px + env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));background:#0c0b10}
 .gcab{flex:1;min-height:0;display:flex;flex-direction:column;max-width:560px;width:100%;margin:0 auto;background:linear-gradient(90deg,#0b0a0d,#1b191f 50%,#0b0a0d);border:5px solid #c4161c;border-radius:7px;box-shadow:inset 0 0 0 1px #000,0 0 0 1px #000}

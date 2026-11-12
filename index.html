@@ -199,6 +199,9 @@ canvas.cv{display:block;background:#0e0a17;border:1px solid var(--line);border-r
 #oscore{margin:0;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
 #onew{margin:0;color:var(--puz);font-weight:700}
 
+/* no text selection or copy pop-up when holding buttons, tiles or the game screen */
+#home,#game,button,canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 /* ---------- in-game cabinet skin ---------- */
 #game{height:100%;display:flex;flex-direction:column;padding:calc(6px + env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));background:#0c0b10}
 .gcab{flex:1;min-height:0;display:flex;flex-direction:column;max-width:560px;width:100%;margin:0 auto;background:linear-gradient(90deg,#0b0a0d,#1b191f 50%,#0b0a0d);border:5px solid #c4161c;border-radius:7px;box-shadow:inset 0 0 0 1px #000,0 0 0 1px #000}
@@ -1949,7 +1952,7 @@ function boot(){
   const hold=(b,d)=>{let iv=null,to=null;const stop=()=>{clearTimeout(to);clearInterval(iv)};b.addEventListener('pointerdown',e=>{e.preventDefault();step(d);stop();to=setTimeout(()=>{iv=setInterval(()=>step(d),150)},420)});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,stop));
     b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();step(d)}})};
   hold($id('prev'),-1);hold($id('next'),1);
-  document.querySelectorAll('#home button').forEach(b=>b.addEventListener('mousedown',e=>e.preventDefault()));$id('start').addEventListener('click',startSel);$id('modeb').addEventListener('click',modeBack);{const bz=document.querySelector('.bz.b');if(bz)bz.textContent='ONLINE & OFFLINE \u00B7 '+NG+' GAMES'}$id('rej1').addEventListener('click',e=>eject(e.currentTarget));
+  document.querySelectorAll('#home button').forEach(b=>b.addEventListener('mousedown',e=>e.preventDefault()));document.addEventListener('contextmenu',e=>{const t=e.target;if(t&&t.closest&&t.closest('#home,#game')&&!t.closest('input,textarea'))e.preventDefault()});document.addEventListener('selectstart',e=>{const t=e.target;if(t&&t.closest&&t.closest('#home,#game')&&!(t.closest&&t.closest('input,textarea')))e.preventDefault()});$id('start').addEventListener('click',startSel);$id('modeb').addEventListener('click',modeBack);{const bz=document.querySelector('.bz.b');if(bz)bz.textContent='ONLINE & OFFLINE \u00B7 '+NG+' GAMES'}$id('rej1').addEventListener('click',e=>eject(e.currentTarget));
   let sx=null;scr.addEventListener('pointerdown',e=>{sx={x:e.clientX}});scr.addEventListener('pointerup',e=>{if(!sx)return;const dx=e.clientX-sx.x;sx=null;if(Math.abs(dx)>36)step(dx<0?1:-1);else startSel()});
   window.addEventListener('keydown',e=>{if(el.home.hidden||e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key,tg=e.target&&e.target.tagName;if(tg==='BUTTON'&&(k==='Enter'||k===' '))return;
     if(k==='ArrowRight'||k==='ArrowDown'){e.preventDefault();step(1)}else if(k==='ArrowLeft'||k==='ArrowUp'){e.preventDefault();step(-1)}
