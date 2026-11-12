@@ -161,18 +161,21 @@ reg('memory','Memory Match','Puzzle','Flip two cards at a time and find all eigh
     else{streak=0;lock=true;ctx.after(650,()=>{SFX.bad();anim(cs[b],'shake');anim(cs[i],'shake');ctx.after(250,()=>{st[b]=st[i]=0;lock=false;draw()})})}})});draw();
 },{low:true,sl:'Turns'});
 
-reg('code','Code Breaker','Puzzle','Crack the hidden four-colour code in ten guesses. Colours can repeat. Solid dots mean right colour, right place. Hollow dots mean right colour, wrong place.',ctx=>{
-  const code=[0,1,2,3].map(()=>R(6));let cur=[],n=0;const log=$('div','',ctx.stage);log.style.cssText='display:flex;flex-direction:column;gap:6px;width:100%;max-width:340px';
+reg('code','Code Breaker','Puzzle','Crack the hidden four-colour code in ten guesses. Colours can repeat. Solid dots mean right colour, right place. Hollow dots mean right colour, wrong place. The dots are not in peg order. CODES LEFT counts the codes that still fit your clues. HINT reveals one peg.',ctx=>{
+  const code=[0,1,2,3].map(()=>R(6));let cur=[],n=0,hints=0;const known=[null,null,null,null],hist=[];const log=$('div','',ctx.stage);log.style.cssText='display:flex;flex-direction:column;gap:4px;width:100%;max-width:340px;max-height:max(150px,calc(100dvh - 560px));overflow-y:auto;scrollbar-width:none';
+  const mark=(g,c)=>{let ex=0,cl=0;const a=[],b=[];g.forEach((v,i)=>{if(v===c[i])ex++;else{a.push(v);b.push(c[i])}});a.forEach(v=>{const j=b.indexOf(v);if(j>=0){cl++;b.splice(j,1)}});return [ex,cl]};
+  const left=()=>{let k=0;for(let m=0;m<1296;m++){const c=[m%6,(m/6|0)%6,(m/36|0)%6,(m/216|0)%6];if(known.every((v,i)=>v==null||c[i]===v)&&hist.every(([g,e,l])=>{const[x,y]=mark(g,c);return x===e&&y===l}))k++}return k};
+  const status=()=>ctx.info('GUESS '+n+' / 10   CODES LEFT '+left()+(hints?'   HINTS '+hints:''));
   const peg=(p,c,sz=28)=>{const e=$('span','',p);e.style.cssText=`display:inline-block;width:${sz}px;height:${sz}px;border-radius:50%;background:${c==null?'rgba(255,255,255,.04)':`radial-gradient(circle at 35% 30%,#fff8,${PAL[c]} 45%)`};border:2px solid ${c==null?C.line:PAL[c]};box-shadow:${c==null?'inset 0 2px 4px #0008':'0 2px 0 #0006'}`;return e};
-  const now=$('div','row',ctx.stage);now.style.padding='10px';now.style.background='#211a33';now.style.borderRadius='14px';now.style.maxWidth='340px';const draw=()=>{now.textContent='';for(let i=0;i<4;i++)peg(now,cur[i],34)};
+  const now=$('div','row',ctx.stage);now.style.padding='10px';now.style.background='#211a33';now.style.borderRadius='14px';now.style.maxWidth='340px';const draw=()=>{now.textContent='';for(let i=0;i<4;i++){const e=peg(now,cur[i],34);if(cur[i]==null&&known[i]!=null){e.style.border='2px dashed '+PAL[known[i]];e.title='Hint'}}};
   const r=ctx.row();for(let c=0;c<6;c++){const k=ctx.btn(r,'',()=>{if(cur.length<4){cur.push(c);beep(400+c*80,.05,'square',.04);draw();anim(now.children[cur.length-1],'pop')}});k.style.cssText+=`;background:radial-gradient(circle at 35% 30%,#fff8,${PAL[c]} 45%);border-color:${PAL[c]};width:44px;height:44px;border-radius:50%`;k.setAttribute('aria-label','Colour '+(c+1))}
-  const r2=ctx.row();ctx.btn(r2,'Undo',()=>{cur.pop();SFX.tap();draw()});ctx.btn(r2,'Check',()=>{if(cur.length<4){anim(now,'shake');return SFX.bad()}let ex=0,cl=0;const a=[],b=[];cur.forEach((c,i)=>{if(c===code[i])ex++;else{a.push(c);b.push(code[i])}});a.forEach(c=>{const j=b.indexOf(c);if(j>=0){cl++;b.splice(j,1)}});
-    const row=$('div','',log);row.style.cssText='display:flex;gap:10px;align-items:center;background:#1a1428;border-radius:10px;padding:6px 10px';$('span','',row,String(n+1)).style.cssText='width:18px;color:#a297c0;font-weight:700';
-    const l=$('span','',row);l.style.cssText='display:flex;gap:6px;flex:1';cur.forEach(c=>peg(l,c,24));
+  const r2=ctx.row();ctx.btn(r2,'Undo',()=>{cur.pop();SFX.tap();draw()});ctx.btn(r2,'Hint',()=>{const free=[0,1,2,3].filter(i=>known[i]==null);if(free.length<=1){anim(now,'shake');return SFX.bad()}const i=free[R(free.length)];known[i]=code[i];hints++;beep(880,.06,'square',.04);beep(1175,.08,'square',.04,.06);draw();anim(now.children[i],'pop');status()});ctx.btn(r2,'Check',()=>{if(cur.length<4){anim(now,'shake');return SFX.bad()}let ex=0,cl=0;const a=[],b=[];cur.forEach((c,i)=>{if(c===code[i])ex++;else{a.push(c);b.push(code[i])}});a.forEach(c=>{const j=b.indexOf(c);if(j>=0){cl++;b.splice(j,1)}});
+    hist.push([cur.slice(),ex,cl]);const row=$('div','',log);row.style.cssText='display:flex;gap:10px;align-items:center;background:#1a1428;border-radius:10px;padding:4px 10px;flex:none';$('span','',row,String(n+1)).style.cssText='width:18px;color:#a297c0;font-weight:700';
+    const l=$('span','',row);l.style.cssText='display:flex;gap:6px;flex:1';cur.forEach(c=>peg(l,c,22));
     const fb=$('span','',row);fb.style.cssText='display:grid;grid-template-columns:repeat(2,10px);gap:3px';for(let i=0;i<4;i++){const d=$('span','',fb);d.style.cssText=`width:10px;height:10px;border-radius:50%;${i<ex?'background:#ffd84a':i<ex+cl?'border:2px solid #f4eeff':'background:#2b2242'}`}
-    anim(row,'pop');for(let i=0;i<ex;i++)beep(800+i*120,.05,'square',.04,i*.07);if(!ex)beep(300,.08,'triangle',.06);
-    ctx.score(++n);ctx.info('Guess '+n+' / 10');if(ex===4)return ctx.over('Code cracked',undefined,'win');if(n>=10){const s=$('div','row',ctx.stage);$('span','note',s,'The code was');code.forEach(c=>peg(s,c));return ctx.over('Locked out',null,'lose')}cur=[];draw()},'pri');
-  ctx.info('Guess 0 / 10');draw();
+    log.scrollTop=log.scrollHeight;anim(row,'pop');for(let i=0;i<ex;i++)beep(800+i*120,.05,'square',.04,i*.07);if(!ex)beep(300,.08,'triangle',.06);
+    ctx.score(++n);status();if(ex===4)return ctx.over('Code cracked',undefined,'win');if(n>=10){const s=$('div','row',ctx.stage);$('span','note',s,'The code was');code.forEach(c=>peg(s,c));return ctx.over('Locked out',null,'lose')}cur=[];draw()},'pri');
+  status();draw();
 },{low:true,sl:'Guesses'});
 
 reg('pop','Block Pop','Puzzle','Tap a group of two or more touching blocks of the same colour to pop them. Bigger groups score far more.',ctx=>{
