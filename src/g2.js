@@ -97,14 +97,25 @@ reg('slide','Slide 15','Puzzle','Tap a tile next to the gap to slide it. Put the
     ctx.info('In place '+b.filter((v,k)=>v===k+1).length+' / 15');if(b.every((v,k)=>v===(k+1)%16))ctx.over('In order',undefined,'win')}));draw();ctx.info('In place '+b.filter((v,k)=>v===k+1).length+' / 15');
 },{low:true,sl:'Moves'});
 
-reg('flood','Flood','Puzzle','Start from the top-left corner. Pick a colour to flood into matching neighbours. Fill the whole board in 22 moves.',ctx=>{
-  const N=12,S=25,MAX=22,{cv,g}=ctx.canvas(300,300,120);const b=Array.from({length:N*N},()=>R(6));let mv=0,mine=new Set([0]);
-  const region=()=>{const c=b[0],seen=new Set([0]),st=[0];while(st.length){const i=st.pop(),x=i%N,y=(i/N)|0;[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{const a=x+dx,d=y+dy,j=d*N+a;if(a>=0&&d>=0&&a<N&&d<N&&!seen.has(j)&&b[j]===c){seen.add(j);st.push(j)}})}return seen};
+reg('flood','Flood','Puzzle','Start from the top-left corner. Pick a colour to flood into matching neighbours. Fill the whole board before you run out of moves. Stuck? HINT shows a good next colour.',ctx=>{
+  const N=12,S=25,{cv,g}=ctx.canvas(300,300,120);let b,mv=0,hints=0,hintC=-1,mine=new Set([0]);
+  const regionOf=bd=>{const c=bd[0],seen=new Set([0]),st=[0];while(st.length){const i=st.pop(),x=i%N,y=(i/N)|0;[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{const a=x+dx,d=y+dy,j=d*N+a;if(a>=0&&d>=0&&a<N&&d<N&&!seen.has(j)&&bd[j]===c){seen.add(j);st.push(j)}})}return seen};
+  const region=()=>regionOf(b);
+  const apply=(bd,c)=>{const n=bd.slice();regionOf(bd).forEach(i=>n[i]=c);return n};
+  // look two moves ahead; wiping a colour off the board always wins
+  const pick=bd=>{let best=-1,bc=-1;const left=new Set(bd).size;for(let c=0;c<6;c++){if(c===bd[0]||!bd.includes(c))continue;const n=apply(bd,c);let s=regionOf(n).size;
+      for(let d=0;d<6;d++)if(d!==c&&n.includes(d))s=Math.max(s,regionOf(apply(n,d)).size*.999);if(new Set(n).size<left)s+=1000;if(s>best){best=s;bc=c}}return bc};
+  const plan=bd=>{let n=0;while(regionOf(bd).size<N*N&&n<80){bd=apply(bd,pick(bd));n++}return n};
+  // build a board that can definitely be finished, then give a little breathing room
+  let par;do{b=Array.from({length:N*N},()=>R(6));par=plan(b)}while(par>24);const MAX=par+3;
   const draw=()=>{g.fillStyle='#0e0a17';g.fillRect(0,0,300,300);mine=region();b.forEach((c,i)=>{const x=(i%N)*S,y=((i/N)|0)*S;g.fillStyle=PAL[c];rrect(g,x+1,y+1,S-2,S-2,mine.has(i)?3:6);g.fill();if(mine.has(i)){g.fillStyle='rgba(255,255,255,.18)';g.fillRect(x+1,y+1,S-2,3)}});
-    ctx.info('Moves '+mv+' / '+MAX+'   Filled '+Math.round(mine.size/(N*N)*100)+'%')};
-  const fill=c=>{const o=b[0];if(o===c||ctx.paused)return;mine.forEach(i=>b[i]=c);ctx.score(++mv);draw();const k=mine.size/(N*N);beep(240+k*700,.08,'square',.045,0,320+k*800);
-    if(b.every(v=>v===c))ctx.over('Flooded',undefined,'win');else if(mv>=MAX)ctx.over('Out of moves',null,'lose')};
-  const r=ctx.row();for(let c=0;c<6;c++){const k=ctx.btn(r,'',()=>fill(c));k.style.cssText+=`;background:${PAL[c]};border-color:${PAL[c]};width:46px;height:46px;border-radius:50%;box-shadow:inset 0 3px 0 rgba(255,255,255,.3)`;k.setAttribute('aria-label','Colour '+(c+1))}draw();
+    keys.forEach((k,c)=>{k.style.outline=c===hintC?'4px solid #2ee6b6':'none';k.style.outlineOffset='3px'});
+    ctx.info('MOVES '+mv+' / '+MAX+'   PAR '+par+'   FILLED '+Math.round(mine.size/(N*N)*100)+'%'+(hints?'   HINTS '+hints:''))};
+  const fill=c=>{const o=b[0];if(o===c||ctx.paused)return;hintC=-1;mine.forEach(i=>b[i]=c);ctx.score(++mv);draw();const k=mine.size/(N*N);beep(240+k*700,.08,'square',.045,0,320+k*800);
+    if(b.every(v=>v===c))ctx.over(mv<=par&&!hints?'Perfect flood':'Flooded',undefined,'win');else if(mv>=MAX)ctx.over('Out of moves',null,'lose')};
+  const r=ctx.row(),keys=[];for(let c=0;c<6;c++){const k=ctx.btn(r,'',()=>fill(c));k.style.cssText+=`;background:${PAL[c]};border-color:${PAL[c]};width:40px;height:40px;min-width:0;padding:0;border-radius:50%;box-shadow:inset 0 3px 0 rgba(255,255,255,.3)`;k.setAttribute("aria-label","Colour "+(c+1));keys.push(k)}
+  ctx.btn(ctx.row(),'Hint',()=>{if(ctx.paused)return;const c=pick(b);if(c<0)return;hintC=c;hints++;beep(880,.06,'square',.04);beep(1175,.08,'square',.04,.06);draw();anim(keys[c],'pop')});
+  draw();
 },{low:true,sl:'Moves'});
 
 reg('hanoi','Tower Stack','Puzzle','Move all five rings to the right-hand peg. Tap a peg to lift its top ring, tap another to drop it. A bigger ring can never sit on a smaller one.',ctx=>{
