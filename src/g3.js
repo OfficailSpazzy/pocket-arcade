@@ -14,7 +14,7 @@ reg('word','Word Guess','Words & Math','Guess the five-letter word in six tries.
       const gs=cur,r0=row;res.forEach((r,i)=>ctx.after(i*230,()=>{const c=cs[r0*5+i];c.style.background=['#3a2f5a','#e0b73a','#2fb59a'][r];c.style.borderColor='transparent';c.style.color=r?'#10231f':C.ink;anim(c,'flipy');beep([260,520,780][r],.07,'square',.04);
         st[gs[i]]=Math.max(st[gs[i]]||0,r+1);const kb=map[gs[i]];kb.style.background=['','#1a1429','#e0b73a','#2fb59a'][st[gs[i]]];kb.style.color=st[gs[i]]>1?'#10231f':st[gs[i]]===1?'#5a5070':''}));
       ctx.after(5*230+150,()=>{lock=false;row++;ctx.score(row);if(gs===ans){for(let i=0;i<5;i++)ctx.after(i*70,()=>anim(cs[r0*5+i],'pop'));return ctx.over('Got it',undefined,'win')}
-        if(row>=6){ctx.info('The word was '+ans.toUpperCase());return ctx.over('Out of tries',null,'lose')}});cur='';return}
+        if(row>=6){ctx.info('The word was '+ans.toUpperCase());return ctx.over('Out of tries',null,'lose',ans)}});cur='';return}
     if(/^[a-z]$/.test(k)&&cur.length<5){cur+=k;beep(600,.03,'square',.025);draw();anim(cs[row*5+cur.length-1],'pop')}};
   const map=keyboard(ctx,press);ctx.keys(press);
 },{low:true,sl:'Tries'});
@@ -33,7 +33,7 @@ reg('hangman','Hangman','Words & Math','Guess the word one letter at a time. Six
   const press=k=>{if(!/^[a-z]$/.test(k)||!bs[k]||bs[k].disabled)return;bs[k].disabled=true;
     if(word.includes(k)){got.add(k);bs[k].style.background='#2fb59a';bs[k].style.color='#10231f';[...out.children].forEach(s=>{if(s.dataset.ch===k){s.textContent=k.toUpperCase();anim(s,'pop')}});beep(700,.06,'square',.04);beep(940,.08,'square',.04,.05);
       if([...word].every(ch=>got.has(ch))){ctx.score(++sc);SFX.win();ctx.info('Solved! Next word coming.');ctx.after(1100,fresh)}}
-    else{miss++;sway=0;bs[k].style.background='#3a1a26';bs[k].style.color='#7a5060';SFX.thud();beep(180,.12,'sawtooth',.04);draw();if(miss>=6){[...out.children].forEach(s=>{if(!s.textContent){s.textContent=s.dataset.ch.toUpperCase();s.style.color='#ff5d7a'}});ctx.over('Run over',undefined,'lose')}}};
+    else{miss++;sway=0;bs[k].style.background='#3a1a26';bs[k].style.color='#7a5060';SFX.thud();beep(180,.12,'sawtooth',.04);draw();if(miss>=6){[...out.children].forEach(s=>{if(!s.textContent){s.textContent=s.dataset.ch.toUpperCase();s.style.color='#ff5d7a'}});ctx.over('Run over',undefined,'lose',word)}}};
   [...'abcdefghijklmnopqrstuvwxyz'].forEach(ch=>{const b=$('button','c',kg,ch.toUpperCase());b.style.aspectRatio='auto';b.style.height='42px';b.style.borderRadius='8px';bs[ch]=b;ctx.on(b,'click',()=>{if(!ctx.paused)press(ch)})});
   ctx.keys(press);fresh();ctx.loop(dt=>{if(miss>5){sway+=dt*3;fig()}});
 },{sl:'Words'});

@@ -60,9 +60,9 @@ function makeCtx(game){
     btn(p,label,fn,cls){const b=$('button','btn'+(cls?' '+cls:''),p,label);ctx.on(b,'click',()=>{if(!ctx.paused)fn(b)});return b},
     grid(cols,n,max,gap){const g=$('div','g',stage);const rows=Math.ceil(n/cols);g.style.gridTemplateColumns=`repeat(${cols},1fr)`;if(gap!=null)g.style.gap=gap+'px';
       g.style.maxWidth=`min(${max||420}px, max(220px, calc((100dvh - 410px) * ${cols} / ${rows})))`;const cs=[];for(let i=0;i<n;i++)cs.push($('button','c',g));return cs},
-    over(msg,score,kind){if(ctx.dead||ctx.done)return;ctx.done=ctx.paused=true;{const od=document.getElementById('odiff');if(od)od.hidden=!game.ai||!!ctx.mp}if(kind==='win'){SFX.win();confetti()}else if(kind==='lose')SFX.lose();else if(kind==='end')SFX.end();if(score===undefined)score=ctx._s;let nb=false;
+    over(msg,score,kind,note){if(ctx.dead||ctx.done)return;ctx.done=ctx.paused=true;{const od=document.getElementById('odiff');if(od)od.hidden=!game.ai||!!ctx.mp}if(kind==='win'){SFX.win();confetti()}else if(kind==='lose')SFX.lose();else if(kind==='end')SFX.end();if(score===undefined)score=ctx._s;let nb=false;
       if(score!=null&&!game.ns&&!ctx.mp){const bk=bestKey(game,ctx.diff),b=store.get(bk);if((b==null&&(game.low||score>0))||(b!=null&&(game.low?score<b:score>b))){store.set(bk,score);nb=true;el.best.textContent=score}}
-      ctx.after(450,()=>{el.omsg.textContent=msg;el.oscore.textContent=score!=null&&!game.ns?(game.sl||'Score')+' '+score:'';el.oscore.hidden=!el.oscore.textContent;el.onew.hidden=!nb;el.over.hidden=false})},
+      ctx.after(450,()=>{el.omsg.textContent=msg;el.oscore.textContent=score!=null&&!game.ns?(game.sl||'Score')+' '+score:'';{let n=document.getElementById('onote');if(!n){n=document.createElement('p');n.id='onote';el.oscore.after(n)}n.textContent='';n.hidden=!note;if(note){n.append('THE WORD WAS');const w=document.createElement('span');w.textContent=note.toUpperCase();n.append(w)}}el.oscore.hidden=!el.oscore.textContent;el.onew.hidden=!nb;el.over.hidden=false})},
     destroy(){ctx.dead=true;cleanups.forEach(f=>{try{f()}catch(e){}})}
   };
   const kd=e=>{if(e.metaKey||e.ctrlKey||e.altKey)return;const inp=e.target&&e.target.tagName==='INPUT';const k=KEYMAP[e.key]||(e.key.length===1?e.key.toLowerCase():e.key);
