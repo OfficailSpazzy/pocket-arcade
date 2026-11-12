@@ -587,13 +587,17 @@ reg('runner','Runner','Arcade','Tap anywhere on the screen, or press space, to j
     obs.forEach(cactus);parts=drawParts(g,parts,dt,300);if(!dead||Math.floor(dead*10)%2)runner(60,y)});
 });
 
-reg('hop','Sky Hop','Arcade','You bounce on your own. Drag or use the arrow keys to land on the next cloud. Climb into space.',ctx=>{
-  const W=320,H=460,{cv,g}=ctx.canvas(W,H),p=ctx.follow(cv,W/2);let pl=[],x=W/2,y=H-60,vy=-470,sc=0,top,squash=0,face=1,mile=1,falling=false;
+reg('hop','Sky Hop','Arcade','You bounce on your own. Drag your finger left or right anywhere on the screen, or use the arrow keys, to land on the next cloud. Climb into space.',ctx=>{
+  const W=320,H=460,{cv,g}=ctx.canvas(W,H),p={x:W/2};let drag=null;
+  const skip=e=>e.target.closest&&e.target.closest('#bar,#over,button,a,input');
+  ctx.on(window,'pointerdown',e=>{if(skip(e))return;if(e.cancelable)e.preventDefault();drag={fx:e.clientX,px:x,id:e.pointerId}},{passive:false});
+  ctx.on(window,'pointermove',e=>{if(!drag||e.pointerId!==drag.id||ctx.paused)return;const r=cv.getBoundingClientRect();p.x=clamp(drag.px+(e.clientX-drag.fx)*W/r.width*1.15,10,W-10)});
+  const end=e=>{if(drag&&e.pointerId===drag.id)drag=null};ctx.on(window,'pointerup',end);ctx.on(window,'pointercancel',end);let pl=[],x=W/2,y=H-60,vy=-470,sc=0,top,squash=0,face=1,mile=1,falling=false;
   for(let yy=H-20;yy>-20;yy-=62)pl.push({x:yy===H-20?W/2-27:R(W-54),y:yy});top=pl[pl.length-1].y;
   const stars=Array.from({length:60},()=>({x:R(W),y:R(H),s:Math.random()}));
   const lerp=(a,b,k)=>a.map((v,i)=>Math.round(v+(b[i]-v)*k));
   const cloud=(q)=>{g.fillStyle='rgba(0,0,0,.08)';g.beginPath();g.ellipse(q.x+27,q.y+9,27,5,0,0,7);g.fill();g.fillStyle='#fff';[[10,2,9],[24,-2,12],[40,2,9],[27,4,10]].forEach(([dx,dy,r])=>{g.beginPath();g.arc(q.x+dx,q.y+dy,r,0,7);g.fill()});g.fillStyle='#dfe9ff';g.fillRect(q.x+4,q.y+6,46,3)};
-  ctx.loop(dt=>{if(ctx.held.left)p.x=x-90;if(ctx.held.right)p.x=x+90;const dx=clamp(p.x-x,-330*dt,330*dt);if(Math.abs(dx)>.5)face=Math.sign(dx);x+=dx;x=clamp(x,10,W-10);squash=Math.max(0,squash-dt*4);
+  ctx.loop(dt=>{if(ctx.held.left)p.x=x-90;else if(ctx.held.right)p.x=x+90;else if(!drag&&(ctx.held.left===false||ctx.held.right===false)){p.x=x;ctx.held.left=ctx.held.right=undefined}const dx=clamp(p.x-x,-(drag?900:330)*dt,(drag?900:330)*dt);if(Math.abs(dx)>.5)face=Math.sign(dx);x+=dx;x=clamp(x,10,W-10);squash=Math.max(0,squash-dt*4);
     const py=y;vy+=900*dt;y+=vy*dt;if(vy>0)for(const q of pl)if(py<=q.y&&y>=q.y&&x>q.x-8&&x<q.x+62){y=q.y;vy=-470;squash=1;beep(260+Math.min(sc/40,300),.1,'square',.04,0,520+Math.min(sc/40,300));break}
     if(y<190){const s=190-y;y=190;sc+=s;const sv=Math.floor(sc/10);ctx.score(sv);if(sv>=mile*100){mile++;SFX.ok()}pl.forEach(q=>q.y+=s);stars.forEach(st=>{st.y+=s*.2;if(st.y>H)st.y-=H});top+=s;pl=pl.filter(q=>q.y<H+10);
       while(top>-10){top-=56+R(34);pl.push({x:R(W-54),y:top})}}
