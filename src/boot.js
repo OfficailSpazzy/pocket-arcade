@@ -106,7 +106,11 @@ function boot(){
   if(document.fonts&&document.fonts.load)document.fonts.load('10px "Press Start 2P"').catch(()=>{});
   show(location.hash.slice(1))}
 boot();
-if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
+if('serviceWorker' in navigator&&location.protocol==='https:'){const had=!!navigator.serviceWorker.controller;let reloading=false,pending=false;
+  const reload=()=>{if(reloading)return;if(!el.home.hidden){reloading=true;location.reload()}else pending=true};
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)reload()});
+  window.addEventListener('hashchange',()=>{if(pending&&!el.home.hidden){pending=false;reload()}});
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update().catch(()=>{})})}).catch(()=>{})})}
 </script>
 </body>
 </html>
