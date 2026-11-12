@@ -280,19 +280,42 @@ reg('blocks','Block Drop','Arcade','Fill rows to clear them. The outline shows w
 });
 
 reg('bricks','Brick Breaker','Arcade','Drag or use the arrow keys to move the paddle. Tap or press space to launch.',ctx=>{
-  const W=320,H=420,{cv,g}=ctx.canvas(W,H),p=ctx.follow(cv,W/2);let bx,by,vx=0,vy=0,bricks,sc=0,lives=3,lvl=1,stuck=true;
+  const W=320,H=420,{cv,g}=ctx.canvas(W,H),p=ctx.follow(cv,W/2);let bx,by,vx=0,vy=0,bricks,sc=0,lives=3,lvl=1,stuck=true,t=0,trail=[],parts=[];
+  const ROW=['#ff5d7a','#ff9f43','#ffd84a','#2fd6b5','#5aa9ff'];
+  const stars=Array.from({length:46},()=>({x:R(W),y:R(H),s:Math.random()*1.2+.4,p:Math.random()*6}));
+  const rr=(x,y,w,h,r)=>{g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h)};
   const mk=()=>{bricks=[];for(let r=0;r<5;r++)for(let c=0;c<8;c++)bricks.push({x:8+c*38,y:50+r*18,c:r})};mk();
   const launch=()=>{if(stuck){stuck=false;vx=(Math.random()-.5)*180;vy=-(230+lvl*20)}};
-  p.tap=launch;ctx.keys(k=>{if(k==='space'||k==='up')launch()});ctx.info('Lives 3');
-  ctx.loop(dt=>{if(ctx.held.left)p.x-=340*dt;if(ctx.held.right)p.x+=340*dt;p.x=clamp(p.x,32,W-32);
-    if(stuck){bx=p.x;by=H-36}else{bx+=vx*dt;by+=vy*dt;
+  p.tap=launch;ctx.keys(k=>{if(k==='space'||k==='up')launch()});
+  const burst=b=>{for(let i=0;i<9;i++)parts.push({x:b.x+17,y:b.y+7,vx:(Math.random()-.5)*190,vy:(Math.random()-.7)*170,l:.5,c:ROW[b.c]})};
+  ctx.loop(dt=>{t+=dt;if(ctx.held.left)p.x-=340*dt;if(ctx.held.right)p.x+=340*dt;p.x=clamp(p.x,32,W-32);
+    if(stuck){bx=p.x;by=H-36;trail.length=0}else{bx+=vx*dt;by+=vy*dt;
       if(bx<6){bx=6;vx=Math.abs(vx)}if(bx>W-6){bx=W-6;vx=-Math.abs(vx)}if(by<6){by=6;vy=Math.abs(vy)}
       if(vy>0&&by>H-34&&by<H-18&&Math.abs(bx-p.x)<38){vy=-Math.abs(vy);vx=(bx-p.x)*6.5}
-      for(let i=0;i<bricks.length;i++){const b=bricks[i];if(bx>b.x-5&&bx<b.x+39&&by>b.y-5&&by<b.y+19){bricks.splice(i,1);vy=-vy;sc+=10;ctx.score(sc);break}}
+      for(let i=0;i<bricks.length;i++){const b=bricks[i];if(bx>b.x-5&&bx<b.x+39&&by>b.y-5&&by<b.y+19){burst(b);bricks.splice(i,1);vy=-vy;sc+=10;ctx.score(sc);break}}
       if(!bricks.length){lvl++;mk();stuck=true}
-      if(by>H+10){lives--;ctx.info('Lives '+lives);if(!lives)return ctx.over('Out of balls');stuck=true}}
-    cls(g,W,H);bricks.forEach(b=>{g.fillStyle=PAL[b.c];g.fillRect(b.x,b.y,34,14)});g.fillStyle=C.ink;g.fillRect(p.x-32,H-28,64,8);
-    g.fillStyle=C.yel;g.beginPath();g.arc(bx,by,6,0,7);g.fill()});
+      if(by>H+10){lives--;if(!lives)return ctx.over('Out of balls');stuck=true}
+      trail.push({x:bx,y:by});if(trail.length>10)trail.shift()}
+    parts.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=420*dt;q.l-=dt});parts=parts.filter(q=>q.l>0);
+    // backdrop
+    const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#1b1238');bg.addColorStop(1,'#0a0714');g.fillStyle=bg;g.fillRect(0,0,W,H);
+    stars.forEach(s=>{g.globalAlpha=.25+.3*Math.sin(t*1.5+s.p)**2;g.fillStyle='#cfc4ff';g.fillRect(s.x,s.y,s.s,s.s)});g.globalAlpha=1;
+    // header strip: level and remaining balls
+    g.fillStyle='rgba(255,255,255,.05)';g.fillRect(0,0,W,32);g.fillStyle='rgba(255,255,255,.12)';g.fillRect(0,32,W,1);
+    g.fillStyle=C.mut;g.font=FONT(12,700);g.textAlign='left';g.textBaseline='middle';g.fillText('LEVEL '+lvl,12,17);
+    for(let i=0;i<3;i++){g.beginPath();g.arc(W-16-i*18,16,5.5,0,7);if(i<lives){g.fillStyle='#fff3c4';g.shadowColor='#ffd84a';g.shadowBlur=8;g.fill();g.shadowBlur=0}else{g.strokeStyle='rgba(255,255,255,.2)';g.lineWidth=1.5;g.stroke()}}
+    // bricks: glossy rounded tiles
+    bricks.forEach(b=>{const c=ROW[b.c];g.shadowColor=c;g.shadowBlur=7;g.fillStyle=c;rr(b.x,b.y,34,14,4);g.fill();g.shadowBlur=0;
+      g.fillStyle='rgba(255,255,255,.34)';rr(b.x+2,b.y+2,30,4,2);g.fill();g.fillStyle='rgba(0,0,0,.2)';rr(b.x,b.y+10,34,4,[0,0,4,4]);g.fill()});
+    parts.forEach(q=>{g.globalAlpha=Math.max(0,q.l*2);g.fillStyle=q.c;g.fillRect(q.x-2,q.y-2,4,4)});g.globalAlpha=1;
+    // paddle
+    const pg=g.createLinearGradient(0,H-29,0,H-19);pg.addColorStop(0,'#ffffff');pg.addColorStop(.45,'#b9a8ff');pg.addColorStop(1,'#6a4dff');
+    g.shadowColor='#8f78ff';g.shadowBlur=14;g.fillStyle=pg;rr(p.x-32,H-29,64,10,5);g.fill();g.shadowBlur=0;g.fillStyle='rgba(255,255,255,.6)';rr(p.x-26,H-27,52,2,1);g.fill();
+    // ball with trail
+    trail.forEach((q,i)=>{g.globalAlpha=(i+1)/trail.length*.3;g.fillStyle='#ffd84a';g.beginPath();g.arc(q.x,q.y,5*(i+1)/trail.length+1,0,7);g.fill()});g.globalAlpha=1;
+    g.shadowColor='#ffd84a';g.shadowBlur=16;g.fillStyle='#fff7d6';g.beginPath();g.arc(bx,by,6,0,7);g.fill();g.shadowBlur=0;
+    if(stuck&&Math.floor(t*2)%2){g.fillStyle=C.ink;g.font=FONT(14,700);g.textAlign='center';g.fillText('TAP TO LAUNCH',W/2,H/2+40)}
+    g.textBaseline='alphabetic'});
 });
 
 reg('duel','Paddle Duel','Arcade','Drag or use the arrow keys. First to 7 points beats the computer.',ctx=>{
