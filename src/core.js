@@ -72,7 +72,7 @@ function makeCtx(game){
   return ctx;
 }
 function stopGame(){if(cur){cur.destroy();cur=null}el.stage.textContent='';el.over.hidden=true;el.info.textContent='';el.clock.textContent=''}
-const DIFFS=[['easy','EASY','THE COMPUTER MAKES MISTAKES','#2ee6b6'],['medium','MEDIUM','A FAIR FIGHT','#ffd23f'],['hard','HARD','NO MERCY','#ff2a2a']];
+const DIFFS=[['baby','BABY','IT BARELY KNOWS HOW TO PLAY','#ff8ad8'],['easy','EASY','THE COMPUTER MAKES MISTAKES','#2ee6b6'],['medium','MEDIUM','A FAIR FIGHT','#ffd23f'],['hard','HARD','NO MERCY','#ff2a2a']];
 const bestKey=(g,d)=>'b_'+g.id+(g.ai?'_'+(d||store.get('d_'+g.id)||'medium'):'');
 function diffMenu(game){stopGame();const ctx=makeCtx(game);cur=ctx;ctx.game=game;el.help.textContent='Choose how good the computer is.';
   let pick=Math.max(0,DIFFS.findIndex(d=>d[0]===(store.get('d_'+game.id)||'medium')));const box=$('div','dmenu',el.stage);$('p','dtitle',box,'SELECT DIFFICULTY');
@@ -81,7 +81,7 @@ function diffMenu(game){stopGame();const ctx=makeCtx(game);cur=ctx;ctx.game=game
   const items=DIFFS.map((d,i)=>{const b=$('button','ditem',box);b.style.setProperty('--dc',d[3]);$('span','dname',b,d[1]);$('span','ddesc',b,d[2]);
     const best=store.get('b_'+game.id+'_'+d[0]);if(best!=null&&!game.ns)$('span','dbest',b,'HI-SCORE '+best);ctx.on(b,'click',()=>choose(i));return b});
   $('p','dhint',box,'\u25B2 \u25BC TO MOVE \u00B7 ENTER TO PLAY');
-  ctx.keys(k=>{if(k==='up'||k==='left'){pick=(pick+2)%3;draw();SFX.tick()}else if(k==='down'||k==='right'){pick=(pick+1)%3;draw();SFX.tick()}else if(k==='enter'||k==='space')choose(pick)});draw()}
+  ctx.keys(k=>{if(k==='up'||k==='left'){pick=(pick+DIFFS.length-1)%DIFFS.length;draw();SFX.tick()}else if(k==='down'||k==='right'){pick=(pick+1)%DIFFS.length;draw();SFX.tick()}else if(k==='enter'||k==='space')choose(pick)});draw()}
 function play(game,diff,mp){stopGame();el.again.hidden=false;el.again.textContent=mp?'Rematch':'Play again';el.home.hidden=true;el.game.hidden=false;el.gname.textContent=game.name.toUpperCase();{const m=document.getElementById('gmeta');if(m)m.textContent=(game._sec?game._sec+' ':'')+'GAME '+String(game._no||GAMES.indexOf(game)+1).padStart(2,'0')+' \u00B7 '+game.cat.toUpperCase()+(mp?' \u00B7 VS FRIEND':diff?' \u00B7 '+diff.toUpperCase():'')}el.help.textContent=mp?game.help.replace(/the computer's/gi,"your friend's").replace(/the computer/gi,'your friend'):game.help;el.slab.textContent=game.sl||'Score';el.score.textContent='0';
   el.sbox.hidden=el.bbox.hidden=!!game.ns;const b=store.get(bestKey(game,diff));el.best.textContent=b==null?'-':b;el.wrap.scrollTop=0;
   if(game.ai&&!diff&&!mp){startMenu(game);return}

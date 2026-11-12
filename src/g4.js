@@ -52,10 +52,10 @@ reg('pool','8-Ball Pool','Board','Drag the cue stick around the ball to aim. Hol
   const bestFrom=(cx,cy,me)=>{const c=cue();let best=null;for(const o of targets(me))for(const p of PK){const px=p[0]+(MX-p[0])*.06,py=p[1]+(MY-p[1])*.03,dpx=px-o.x,dpy=py-o.y,d2=Math.hypot(dpx,dpy),ux=dpx/d2,uy=dpy/d2,gx=o.x-ux*2*r,gy=o.y-uy*2*r;
       const vx=gx-cx,vy=gy-cy,d1=Math.hypot(vx,vy);if(d1<1)continue;const cos=(vx*ux+vy*uy)/d1;if(cos<.3)continue;if(!segClear(cx,cy,gx,gy,[c,o])||!segClear(o.x,o.y,px,py,[c,o]))continue;
       const sc=cos*cos*1000/(d1+d2*1.4+60);if(!best||sc>best.sc)best={sc,ang:Math.atan2(vy,vx),pw:clamp((d1*.55+d2)/(560*Math.sqrt(cos))+.22,.28,.95)}}return best};
-  const aiStart=()=>{state='ai';aiT=0;const c=cue(),err={easy:.07,medium:.028,hard:.008}[ctx.diff]??.028;
-    if(inHand){let bp=null;for(let k=0;k<90;k++){const x=L+r+Math.random()*(R-L-2*r),y=T+r+Math.random()*(B-T-2*r);if(!freeSpot(x,y,c))continue;const s=bestFrom(x,y,1);if(s&&(!bp||s.sc>bp.s.sc))bp={x,y,s}}if(bp){c.x=bp.x;c.y=bp.y}inHand=false}
+  const aiStart=()=>{state='ai';aiT=0;const c=cue(),err={baby:.2,easy:.07,medium:.028,hard:.008}[ctx.diff]??.028;
+    if(inHand){let bp=null;for(let k=0;k<90;k++){const x=L+r+Math.random()*(R-L-2*r),y=T+r+Math.random()*(B-T-2*r);if(!freeSpot(x,y,c))continue;if(ctx.diff==='baby'){bp={x,y,s:null};break}const s=bestFrom(x,y,1);if(s&&(!bp||s.sc>bp.s.sc))bp={x,y,s}}if(bp){c.x=bp.x;c.y=bp.y}inHand=false}
     let p=bestFrom(c.x,c.y,1);
-    if(!p||(ctx.diff==='easy'&&Math.random()<.3)){const ts=targets(1).length?targets(1):balls.filter(b=>b.on&&b.n);let o=ts[0],bd=1e9;for(const b of ts){const d=Math.hypot(b.x-c.x,b.y-c.y);if(d<bd&&segClear(c.x,c.y,b.x,b.y,[c,b])){bd=d;o=b}}p={ang:Math.atan2(o.y-c.y,o.x-c.x),pw:.45+Math.random()*.25}}
+    if(!p||(ctx.diff==='easy'&&Math.random()<.3)||(ctx.diff==='baby'&&Math.random()<.8)){const ts=targets(1).length?targets(1):balls.filter(b=>b.on&&b.n);let o=ts[0],bd=1e9;if(ctx.diff==='baby')o=ts[Math.floor(Math.random()*ts.length)];else for(const b of ts){const d=Math.hypot(b.x-c.x,b.y-c.y);if(d<bd&&segClear(c.x,c.y,b.x,b.y,[c,b])){bd=d;o=b}}p={ang:Math.atan2(o.y-c.y,o.x-c.x),pw:ctx.diff==='baby'?.25+Math.random()*.75:.45+Math.random()*.25}}
     if(isBreak)p={ang:Math.atan2(T+150-c.y,MX-c.x),pw:1};
     const g2=()=>((Math.random()+Math.random()+Math.random())/3-.5)*2;plan={ang:p.ang+g2()*err,pw:clamp(p.pw+g2()*.06,.2,1),from:aim};say('CPU IS AIMING',1)};
   // ---- input ----
@@ -145,7 +145,7 @@ reg('checkers','Checkers','Board','Tap a piece, then tap where it goes. Your pie
       const m=nx[0],k=prefix.length;step(prefix[k-1],i,m.caps.length?m.caps[k-1]:null);prefix.push(i);last=[prefix[0],i];
       const done=nx.find(mm=>mm.path.length===prefix.length);if(done){chosen=done;return finishTurn()}draw();return}
     if(b[i]*PS>0&&legal.some(m=>m.path[0]===i)){sel=i;prefix=[i];SFX.tick();draw()}else if(b[i]*PS>0){SFX.bad();anim(c,'shake')}})});
-  const cpu=()=>{const ms=moves(b,-1);let pick;if(ctx.diff==='easy')pick=ms[R(ms.length)];else{const D=ctx.diff==='hard'?6:3;let bs=-1e9;for(const m of shuffle(ms.slice())){const v=-nega(apply(b,m),D-1,1,-1e9,1e9)+Math.random()*.01;if(v>bs){bs=v;pick=m}}}theirMove(pick)};
+  const cpu=()=>{const ms=moves(b,-1);let pick;if(ctx.diff==='easy'||ctx.diff==='baby')pick=ms[R(ms.length)];else{const D=ctx.diff==='hard'?6:3;let bs=-1e9;for(const m of shuffle(ms.slice())){const v=-nega(apply(b,m),D-1,1,-1e9,1e9)+Math.random()*.01;if(v>bs){bs=v;pick=m}}}theirMove(pick)};
   if(NW)NW.on(m=>{if(m.t==='mv'&&busy&&!ctx.done)theirMove(m)});
   draw();
 },{ns:true});
