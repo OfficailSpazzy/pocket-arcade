@@ -2,23 +2,27 @@
 /* ================= PUZZLE ================= */
 const boardBox=(cs,bg,pad)=>{const p=cs[0].parentNode;p.style.background=bg;p.style.padding=(pad||8)+'px';p.style.borderRadius='14px';return p};
 
-reg('2048','2048','Puzzle','Swipe or use the arrow keys. Matching tiles merge. Reach 2048 and keep going.',ctx=>{
-  let b=Array(16).fill(0),sc=0,won=false;const cs=ctx.grid(4,16,380,8);boardBox(cs,'#2a2140');
-  cs.forEach(c=>{c.classList.add('flat');c.tabIndex=-1;c.style.border='0';c.style.borderRadius='10px';c.style.transition='background .12s'});
+reg('2048','2048','Puzzle','Swipe or use the arrow keys. Matching tiles slide together and merge. Reach 2048 and keep going.',ctx=>{
   const COL={2:'#eee4da',4:'#ede0c8',8:'#f2b179',16:'#f59563',32:'#f67c5f',64:'#f65e3b',128:'#edcf72',256:'#edcc61',512:'#edc850',1024:'#edc53f',2048:'#edc22e'};
-  const add=()=>{const e=[];b.forEach((v,i)=>{if(!v)e.push(i)});if(!e.length)return -1;const k=e[R(e.length)];b[k]=Math.random()<.9?2:4;return k};
-  const draw=(nw,mg)=>cs.forEach((c,i)=>{const v=b[i];c.textContent=v||'';c.style.background=v?(COL[v]||'#3c3a32'):'rgba(255,255,255,.06)';c.style.color=v>4?'#fff':'#776e65';
-    c.style.fontSize=v>999?'clamp(14px,4.4vw,22px)':v>99?'clamp(18px,5.6vw,28px)':'clamp(22px,7vw,34px)';c.style.boxShadow=v>=128?`0 0 ${Math.log2(v)*2}px ${COL[v]||'#edc22e'}`:'';if(i===nw||(mg&&mg.has(i)))anim(c,'pop')});
-  const can=()=>b.some((v,i)=>!v||(i%4<3&&v===b[i+1])||(i<12&&v===b[i+4]));
-  const move=d=>{if(!['left','right','up','down'].includes(d))return;const old=b.join(),mg=new Set();let gain=0,top=0;
-    for(let i=0;i<4;i++){const idx=[0,1,2,3].map(j=>d==='left'?i*4+j:d==='right'?i*4+3-j:d==='up'?j*4+i:(3-j)*4+i);const vals=idx.map(k=>b[k]).filter(v=>v),out=[],mf=[];
-      for(let j=0;j<vals.length;j++){if(j<vals.length-1&&vals[j]===vals[j+1]){out.push(vals[j]*2);mf.push(1);gain+=vals[j]*2;top=Math.max(top,vals[j]*2);j++}else{out.push(vals[j]);mf.push(0)}}
-      while(out.length<4){out.push(0);mf.push(0)}idx.forEach((k,j)=>{b[k]=out[j];if(mf[j])mg.add(k)})}
-    if(b.join()===old)return;sc+=gain;const nw=add();draw(nw,mg);ctx.score(sc);
-    if(gain){const l=Math.log2(top);beep(260+l*55,.07,'square',.045,0,400+l*70)}else noise(.06,.07,0,1400);
-    if(!won&&b.includes(2048)){won=true;SFX.win();confetti();ctx.info('2048! Keep going for a higher score.')}
-    if(!can())ctx.over('No moves left',undefined,'end')};
-  ctx.keys(move);ctx.swipe(ctx.stage,move);add();add();draw();
+  const bd=$('div','b48',ctx.stage);for(let i=0;i<16;i++){const c=$('div','bg',bd);c.style.setProperty('--c',i%4);c.style.setProperty('--r',i>>2)}
+  let grid=Array.from({length:4},()=>Array(4).fill(null)),sc=0,won=false,pending=null;
+  const paint=t=>{const v=t.v;t.in.textContent=v;t.in.style.background=COL[v]||'#3c3a32';t.in.style.color=v>4?'#fff':'#776e65';t.in.style.fontSize=v>999?'clamp(16px,5vw,26px)':v>99?'clamp(20px,6.4vw,32px)':'clamp(24px,8vw,40px)';t.in.style.boxShadow=v>=128?`0 0 ${Math.log2(v)*2}px ${COL[v]||'#edc22e'}`:''};
+  const place=(t,r,c)=>{t.r=r;t.c=c;t.el.style.setProperty('--r',r);t.el.style.setProperty('--c',c)};
+  const spawn=()=>{const e=[];for(let r=0;r<4;r++)for(let c=0;c<4;c++)if(!grid[r][c])e.push([r,c]);if(!e.length)return;const [r,c]=e[R(e.length)];
+    const t={v:Math.random()<.9?2:4};t.el=$('div','tl',bd);t.in=$('div','tv',t.el);place(t,r,c);paint(t);anim(t.in,'appear');grid[r][c]=t};
+  const can=()=>{for(let r=0;r<4;r++)for(let c=0;c<4;c++){const t=grid[r][c];if(!t)return true;if(c<3&&grid[r][c+1]&&grid[r][c+1].v===t.v)return true;if(r<3&&grid[r+1][c]&&grid[r+1][c].v===t.v)return true}return false};
+  const flush=()=>{if(pending){const f=pending;pending=null;f()}};
+  const move=d=>{if(!['left','right','up','down'].includes(d)||ctx.paused)return;flush();let moved=false,gain=0,top=0;const dying=[],merged=[];
+    for(let i=0;i<4;i++){const cells=[0,1,2,3].map(j=>d==='left'?[i,j]:d==='right'?[i,3-j]:d==='up'?[j,i]:[3-j,i]);const ts=cells.map(([r,c])=>grid[r][c]).filter(Boolean);cells.forEach(([r,c])=>grid[r][c]=null);
+      let k=0,last=null;for(const t of ts){if(last&&!last.m&&last.v===t.v){last.m=true;gain+=last.v*2;top=Math.max(top,last.v*2);place(t,last.r,last.c);dying.push(t);merged.push(last);moved=true}
+        else{const [r,c]=cells[k++];if(t.r!==r||t.c!==c)moved=true;place(t,r,c);grid[r][c]=t;last=t}}}
+    if(!moved)return;sc+=gain;ctx.score(sc);dying.forEach(t=>t.el.classList.add('dying'));
+    if(gain){const l=Math.log2(top);beep(260+l*55,.07,'square',.045,.08,400+l*70)}else noise(.06,.07,0,1400);
+    pending=()=>{dying.forEach(t=>t.el.remove());merged.forEach(t=>{t.v*=2;t.m=false;paint(t);anim(t.in,'bump')});spawn();
+      if(!won&&grid.flat().some(t=>t&&t.v===2048)){won=true;SFX.win();confetti();ctx.info('2048! Keep going for a higher score.')}
+      if(!can())ctx.over('No moves left',undefined,'end')};
+    ctx.after(125,()=>flush())};
+  ctx.keys(move);ctx.swipe(ctx.stage,move);spawn();spawn();
 });
 
 reg('mines','Minesweeper','Puzzle','Tap to reveal. Numbers count the mines touching a square. Long-press, right-click or switch on Flag to mark a mine. Clear every safe square.',ctx=>{
