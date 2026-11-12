@@ -97,6 +97,7 @@ function startSel(){if(busy)return;if(typed){commit();return}if(!mode){press($id
 
 function show(id){const gm=GAMES.find(x=>x.id===id);shown=gm?id:'';if(gm){mode=gm.ai?'online':'offline';sel=LISTS[mode].indexOf(gm);store.set('sel_'+mode,sel);cancelAnimationFrame(raf);raf=0;play(gm)}
   else{stopGame();el.game.hidden=true;el.home.hidden=false;fx={type:'on',t:0};sfxOn();led();announce();if(!raf){lastT=0;raf=requestAnimationFrame(frame)}}}
+function setShown(gm){mode=gm.ai?'online':'offline';sel=LISTS[mode].indexOf(gm);store.set('sel_'+mode,sel);shown=gm.id;try{history.replaceState(null,'','#'+gm.id)}catch(e){}cancelAnimationFrame(raf);raf=0}
 function nav(id){try{if(id)location.hash=id;else history.replaceState(null,'',location.pathname+location.search)}catch(e){try{location.hash=id||''}catch(e2){}}show(id)}
 
 function boot(){
@@ -112,8 +113,8 @@ function boot(){
     else if(/^[0-9]$/.test(k))typeDigit(k);else if(k==='Enter'||k===' '){e.preventDefault();startSel()}else if(k==='Backspace'||k==='Escape'){if(typed){typed='';clearTimeout(typeT);led()}else modeBack()}else if(k==='m')modeBack()});
   const ms=()=>{[el.mute,$id('hmute')].forEach(b=>{b.setAttribute('aria-label',MUTED?'Sound off':'Sound on');b.classList.toggle('off',MUTED)})};ms();
   [el.mute,$id('hmute')].forEach(b=>b.addEventListener('click',()=>{MUTED=!MUTED;store.set('mute',MUTED);ms();if(!MUTED){unlockAudio();setTimeout(()=>SFX.tap(),30)}}));
-  el.back.addEventListener('click',()=>nav(''));el.quit.addEventListener('click',()=>nav(''));el.again.addEventListener('click',()=>{if(cur)play(cur.game,cur.diff)});$id('odiff').addEventListener('click',()=>{if(cur)play(cur.game)});
-  window.addEventListener('hashchange',()=>{const id=location.hash.slice(1);if(id!==shown)show(id)});
+  el.back.addEventListener('click',()=>{NET.close();nav('')});el.quit.addEventListener('click',()=>{NET.close();nav('')});el.again.addEventListener('click',()=>{if(!cur)return;if(cur.mp)mpRematch();else play(cur.game,cur.diff)});$id('odiff').addEventListener('click',()=>{if(cur)play(cur.game)});
+  window.addEventListener('hashchange',()=>{const id=location.hash.slice(1);if(id!==shown){if(cur&&cur.mp)NET.close();show(id)}});
   if(document.fonts&&document.fonts.load)document.fonts.load('10px "Press Start 2P"').catch(()=>{});
   show(location.hash.slice(1))}
 boot();

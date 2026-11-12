@@ -216,6 +216,7 @@ reg('reversi','Reversi','Board','You are yellow. Place a disc to trap the comput
 
 reg('sea','Sea Battle','Board','Drag your five ships onto your grid. Tap a placed ship to turn it, then press Ready. Tap the enemy grid to fire, and sink their whole fleet before they sink yours.',ctx=>{
   const N=8,SH=[4,3,3,2,2],NM=['Battleship','Cruiser','Submarine','Destroyer','Patrol boat'],TOT=14;
+  const MP=ctx.mp?mpWire(ctx):null;let theyReady=false,started=false,onReady=()=>{if(!started&&!ctx.dead)ctx.info('Your friend is ready. Deploy your fleet.')};if(MP)MP.on(m=>{if(m.t==='ready'){theyReady=true;onReady()}});
   const at=(x,y)=>y*N+x,cellsOf=(L,x,y,h)=>{const o=[];for(let k=0;k<L;k++)o.push([x+(h?k:0),y+(h?0:k)]);return o};
   const canGrid=(g,L,x,y,h,noTouch)=>cellsOf(L,x,y,h).every(([cx,cy])=>{if(cx<0||cy<0||cx>=N||cy>=N||g[at(cx,cy)])return false;if(!noTouch)return true;for(let dy=-1;dy<2;dy++)for(let dx=-1;dx<2;dx++){const ax=cx+dx,ay=cy+dy;if(ax>=0&&ay>=0&&ax<N&&ay<N&&g[at(ax,ay)])return false}return true});
   const randomLayout=noTouch=>{for(;;){const g=Array(64).fill(0);let ok=true;for(let id=1;id<=5&&ok;id++){const L=SH[id-1];let done=false;for(let t=0;t<300&&!done;t++){const h=R(2),x=R(h?N-L+1:N),y=R(h?N:N-L+1);if(canGrid(g,L,x,y,h,noTouch)){cellsOf(L,x,y,h).forEach(([cx,cy])=>g[at(cx,cy)]=id);done=true}}ok=done}if(ok)return g}};
@@ -270,8 +271,32 @@ reg('sea','Sea Battle','Board','Drag your five ships onto your grid. Tap a place
   ctx.keys(k=>{if(k==='r')rotate(selected)});
   requestAnimationFrame(()=>{if(!ctx.dead)drawP()});
 
+  /* ---------- battle against a friend ---------- */
+  const mpBattle=me=>{started=true;const ME=MP.me,es=Array(64).fill(0),ms=Array(64).fill(0),sunkE=new Set();let turn=MP.first,shots=0,pending=false,eSunk=0;
+    const sunk=(grid,shots,id)=>grid.every((v,i)=>v!==id||shots[i]===2),base=i=>((i+((i/N)|0))%2?'#164a74':'#1a5584');
+    $('p','note',ctx.stage,'Enemy waters');const ec=ctx.grid(N,64,340,3);const eBox=boardBox(ec,'#0b2a44',6);eBox.style.position='relative';const msg=$('p','note',ctx.stage,'');msg.style.color='#f4eeff';msg.style.minHeight='1.4em';
+    $('p','note',ctx.stage,'Your fleet');const mc=ctx.grid(N,64,220,2);boardBox(mc,'#0b2a44',4);
+    const cell=(c,s,isS,ship,i)=>{c.style.borderRadius='4px';c.style.border='0';c.style.fontSize='clamp(10px,3.2vw,16px)';c.textContent=s===2?(isS?'✖':'✹'):s===1?'◦':s===3?'•':'';c.style.color=s===2?'#fff':'#9cc9ee';
+      c.style.background=s===2?(isS?'#5a1a24':'radial-gradient(circle,#ffd84a,#ff5d3a 60%,#a8281e)'):ship?'linear-gradient(#b3bdd3,#6e7a96)':base(i);c.style.boxShadow='inset 0 0 0 1px rgba(255,255,255,.06)'};
+    const draw=()=>{ec.forEach((c,i)=>cell(c,es[i],sunkE.has(i),false,i));mc.forEach((c,i)=>{c.classList.add('flat');c.tabIndex=-1;cell(c,ms[i],ms[i]===2&&sunk(me,ms,me[i]),me[i],i)});
+      ctx.info((turn===ME?'YOUR SHOT':"FRIEND'S SHOT")+'   ENEMY SHIPS '+(5-eSunk)+'  YOURS '+(5-[1,2,3,4,5].filter(id=>sunk(me,ms,id)).length))};
+    const cover=$('div','',eBox);cover.style.cssText='position:absolute;inset:0;display:grid;place-items:center;background:rgba(4,16,30,.82);border-radius:14px;font:400 9px/1.7 "Press Start 2P",monospace;color:#ffd23f;text-align:center;padding:10px';
+    const begin=()=>{if(!theyReady||!cover.isConnected||cover.dataset.go)return;cover.dataset.go=1;cover.innerHTML='BATTLE<br>STATIONS!';cover.style.color='#ff2a2a';[523,659,784].forEach((f,i)=>beep(f,.09,'square',.05,i*.08));
+      ctx.after(800,()=>{cover.remove();msg.textContent=turn===ME?'Your shot. Pick a square to fire.':'Your friend shoots first.';draw()})};
+    onReady=begin;cover.innerHTML='WAITING FOR<br>YOUR FRIEND<br>TO DEPLOY';MP.send('ready');begin();
+    MP.on(m=>{if(ctx.done)return;
+      if(m.t==='fire'){const i=m.i;if(ms[i])return;const hit=!!me[i];ms[i]=hit?2:1;let cells=null,name=null;if(hit&&sunk(me,ms,me[i])){cells=[];me.forEach((v,k)=>{if(v===me[i])cells.push(k)});name=NM[me[i]-1]}
+        const lost=[1,2,3,4,5].every(id=>sunk(me,ms,id));MP.send('res',{i,hit,cells,name,lost});anim(mc[i],'pop');
+        if(hit){noise(.25,.18,0,400);beep(110,.25,'sawtooth',.05,0,50);msg.textContent=name?'They sank your '+name+'.':'They hit your ship!';if(name)SFX.bad()}else{noise(.18,.08,0,900);msg.textContent='They missed. Your shot.'}
+        turn=ME;draw();if(lost)ctx.over('Fleet sunk',null,'lose')}
+      else if(m.t==='res'){pending=false;const i=m.i;es[i]=m.hit?2:1;anim(ec[i],'pop');
+        if(m.hit){noise(.3,.22,0,350);beep(120,.3,'sawtooth',.06,0,45);if(m.cells){m.cells.forEach(k=>sunkE.add(k));eSunk++;msg.textContent='You sank their '+m.name+'!';ctx.after(250,SFX.ok)}else msg.textContent='Hit!'}else{noise(.2,.09,0,1000);beep(700,.12,'sine',.04,0,300);msg.textContent='Splash. Missed.'}
+        turn=1-ME;draw();if(m.lost)ctx.over('Enemy fleet sunk',undefined,'win')}});
+    ec.forEach((c,i)=>{c.setAttribute('aria-label','Target '+(i+1));ctx.on(c,'click',()=>{if(ctx.paused||cover.isConnected||turn!==ME||pending||es[i])return;pending=true;es[i]=3;MP.send('fire',{i});ctx.score(++shots);draw()})});
+    draw()};
+
   /* ---------- phase 2: battle ---------- */
-  const ready=()=>{if(!ships.every(s=>s.x>=0)){SFX.bad();anim(dock,'shake');return}const me=occ(null);ctx.stage.textContent='';battle(me)};
+  const ready=()=>{if(!ships.every(s=>s.x>=0)){SFX.bad();anim(dock,'shake');return}const me=occ(null);ctx.stage.textContent='';(MP?mpBattle:battle)(me)};
   const battle=me=>{const en=aiPlace(),es=Array(64).fill(0),ms=Array(64).fill(0);let eh=0,mh=0,shots=0,busy=true,q=[];
     const sunk=(grid,shots,id)=>grid.every((v,i)=>v!==id||shots[i]===2);
     $('p','note',ctx.stage,'Enemy waters');const ec=ctx.grid(N,64,340,3);const eBox=boardBox(ec,'#0b2a44',6);eBox.style.position='relative';const msg=$('p','note',ctx.stage,'');msg.style.color='#f4eeff';msg.style.minHeight='1.4em';

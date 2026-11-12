@@ -60,8 +60,8 @@ function makeCtx(game){
     btn(p,label,fn,cls){const b=$('button','btn'+(cls?' '+cls:''),p,label);ctx.on(b,'click',()=>{if(!ctx.paused)fn(b)});return b},
     grid(cols,n,max,gap){const g=$('div','g',stage);const rows=Math.ceil(n/cols);g.style.gridTemplateColumns=`repeat(${cols},1fr)`;if(gap!=null)g.style.gap=gap+'px';
       g.style.maxWidth=`min(${max||420}px, max(220px, calc((100dvh - 410px) * ${cols} / ${rows})))`;const cs=[];for(let i=0;i<n;i++)cs.push($('button','c',g));return cs},
-    over(msg,score,kind){if(ctx.dead||ctx.done)return;ctx.done=ctx.paused=true;{const od=document.getElementById('odiff');if(od)od.hidden=!game.ai}if(kind==='win'){SFX.win();confetti()}else if(kind==='lose')SFX.lose();else if(kind==='end')SFX.end();if(score===undefined)score=ctx._s;let nb=false;
-      if(score!=null&&!game.ns){const bk=bestKey(game,ctx.diff),b=store.get(bk);if((b==null&&(game.low||score>0))||(b!=null&&(game.low?score<b:score>b))){store.set(bk,score);nb=true;el.best.textContent=score}}
+    over(msg,score,kind){if(ctx.dead||ctx.done)return;ctx.done=ctx.paused=true;{const od=document.getElementById('odiff');if(od)od.hidden=!game.ai||!!ctx.mp}if(kind==='win'){SFX.win();confetti()}else if(kind==='lose')SFX.lose();else if(kind==='end')SFX.end();if(score===undefined)score=ctx._s;let nb=false;
+      if(score!=null&&!game.ns&&!ctx.mp){const bk=bestKey(game,ctx.diff),b=store.get(bk);if((b==null&&(game.low||score>0))||(b!=null&&(game.low?score<b:score>b))){store.set(bk,score);nb=true;el.best.textContent=score}}
       ctx.after(450,()=>{el.omsg.textContent=msg;el.oscore.textContent=score!=null&&!game.ns?(game.sl||'Score')+' '+score:'';el.oscore.hidden=!el.oscore.textContent;el.onew.hidden=!nb;el.over.hidden=false})},
     destroy(){ctx.dead=true;cleanups.forEach(f=>{try{f()}catch(e){}})}
   };
@@ -74,7 +74,7 @@ function makeCtx(game){
 function stopGame(){if(cur){cur.destroy();cur=null}el.stage.textContent='';el.over.hidden=true;el.info.textContent='';el.clock.textContent=''}
 const DIFFS=[['easy','EASY','THE COMPUTER MAKES MISTAKES','#2ee6b6'],['medium','MEDIUM','A FAIR FIGHT','#ffd23f'],['hard','HARD','NO MERCY','#ff2a2a']];
 const bestKey=(g,d)=>'b_'+g.id+(g.ai?'_'+(d||store.get('d_'+g.id)||'medium'):'');
-function diffMenu(game){const ctx=makeCtx(game);cur=ctx;ctx.game=game;el.help.textContent='Choose how good the computer is.';
+function diffMenu(game){stopGame();const ctx=makeCtx(game);cur=ctx;ctx.game=game;el.help.textContent='Choose how good the computer is.';
   let pick=Math.max(0,DIFFS.findIndex(d=>d[0]===(store.get('d_'+game.id)||'medium')));const box=$('div','dmenu',el.stage);$('p','dtitle',box,'SELECT DIFFICULTY');
   const draw=()=>items.forEach((b,i)=>b.classList.toggle('on',i===pick));
   const choose=i=>{if(ctx.paused)return;ctx.paused=true;pick=i;draw();store.set('d_'+game.id,DIFFS[i][0]);beep(988,.07,'square',.05);beep(1319,.22,'square',.05,.08);anim(items[i],'pop');ctx.after(420,()=>play(game,DIFFS[i][0]))};
@@ -82,7 +82,7 @@ function diffMenu(game){const ctx=makeCtx(game);cur=ctx;ctx.game=game;el.help.te
     const best=store.get('b_'+game.id+'_'+d[0]);if(best!=null&&!game.ns)$('span','dbest',b,'HI-SCORE '+best);ctx.on(b,'click',()=>choose(i));return b});
   $('p','dhint',box,'\u25B2 \u25BC TO MOVE \u00B7 ENTER TO PLAY');
   ctx.keys(k=>{if(k==='up'||k==='left'){pick=(pick+2)%3;draw();SFX.tick()}else if(k==='down'||k==='right'){pick=(pick+1)%3;draw();SFX.tick()}else if(k==='enter'||k==='space')choose(pick)});draw()}
-function play(game,diff){stopGame();el.home.hidden=true;el.game.hidden=false;el.gname.textContent=game.name.toUpperCase();{const m=document.getElementById('gmeta');if(m)m.textContent=(game._sec?game._sec+' ':'')+'GAME '+String(game._no||GAMES.indexOf(game)+1).padStart(2,'0')+' \u00B7 '+game.cat.toUpperCase()+(diff?' \u00B7 '+diff.toUpperCase():'')}el.help.textContent=game.help;el.slab.textContent=game.sl||'Score';el.score.textContent='0';
+function play(game,diff,mp){stopGame();el.again.hidden=false;el.again.textContent=mp?'Rematch':'Play again';el.home.hidden=true;el.game.hidden=false;el.gname.textContent=game.name.toUpperCase();{const m=document.getElementById('gmeta');if(m)m.textContent=(game._sec?game._sec+' ':'')+'GAME '+String(game._no||GAMES.indexOf(game)+1).padStart(2,'0')+' \u00B7 '+game.cat.toUpperCase()+(mp?' \u00B7 VS FRIEND':diff?' \u00B7 '+diff.toUpperCase():'')}el.help.textContent=mp?game.help.replace(/the computer's/gi,"your friend's").replace(/the computer/gi,'your friend'):game.help;el.slab.textContent=game.sl||'Score';el.score.textContent='0';
   el.sbox.hidden=el.bbox.hidden=!!game.ns;const b=store.get(bestKey(game,diff));el.best.textContent=b==null?'-':b;el.wrap.scrollTop=0;
-  if(game.ai&&!diff){diffMenu(game);return}
-  cur=makeCtx(game);cur.game=game;cur.diff=diff||'medium';try{game.fn(cur)}catch(e){console.error(e);$('p','note',el.stage,'This game hit an error. Go back and try another.')}}
+  if(game.ai&&!diff&&!mp){startMenu(game);return}
+  cur=makeCtx(game);cur.game=game;cur.diff=diff||'medium';cur.mp=mp||null;try{game.fn(cur)}catch(e){console.error(e);$('p','note',el.stage,'This game hit an error. Go back and try another.')}}
