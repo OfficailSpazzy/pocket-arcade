@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#15101f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arcade">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Pocket Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a shelf of numbered cartridges, colour-coded by genre; one game fills the screen at a time. Single dark theme by choice. */
+:root{
+  --bg:#15101f; --panel:#211a33; --panel2:#2b2242; --line:#3a2f5a; --ink:#f4eeff; --mut:#a297c0;
+  --arc:#ff5d5d; --puz:#ffc93c; --brd:#2fd6b5; --wrd:#5aa9ff; --crd:#ff7ac6;
+  --display:'Bungee',Impact,'Arial Black',sans-serif; --body:'Chakra Petch',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.45 var(--body);-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* ---------- home ---------- */
+#home{max-width:1040px;margin:0 auto;padding:calc(22px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:18px}
+.mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
+.mast h1{font:400 clamp(30px,9vw,58px)/.95 var(--display);margin:0;letter-spacing:.01em;text-wrap:balance}
+.mast h1 span{color:var(--puz)}
+.mast p{margin:0;color:var(--mut);max-width:34ch}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#q{flex:1 1 180px;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+#q::placeholder{color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:600;font-size:14px;color:var(--mut)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.cart{--k:var(--arc);position:relative;text-align:left;background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--k);border-radius:6px 6px 12px 12px;padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px;min-height:112px;transition:transform .12s,background .12s}
+.cart:hover{background:var(--panel2);transform:translateY(-3px)}
+.cart:active{transform:translateY(1px)}
+.cart .no{font:400 30px/1 var(--display);color:var(--k)}
+.cart .nm{font-weight:700;font-size:17px;line-height:1.2;margin-top:4px}
+.cart .ct{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.cart .bs{position:absolute;top:10px;right:10px;font-size:12px;font-weight:600;color:var(--mut);font-variant-numeric:tabular-nums}
+.none{color:var(--mut);padding:20px 0}
+@media (prefers-reduced-motion:reduce){.cart{transition:none}}
+
+/* ---------- game ---------- */
+#game{height:100%;display:flex;flex-direction:column}
+#bar{display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left));border-bottom:1px solid var(--line);background:var(--panel)}
+#back{background:transparent;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-weight:700;white-space:nowrap}
+#gname{font:400 clamp(15px,4.6vw,20px)/1.1 var(--display);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat{text-align:right;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;line-height:1.15}
+.stat b{display:block;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:0}
+#wrap{flex:1;min-height:0;overflow:auto;position:relative}
+#help{margin:0;padding:8px 16px 0;color:var(--mut);font-size:14px;text-align:center}
+#status{display:flex;justify-content:center;gap:16px;padding:4px 16px 0;min-height:26px;font-weight:600;font-variant-numeric:tabular-nums;text-align:center}
+#clock{color:var(--puz)}
+#stage{padding:8px 16px 28px;display:flex;flex-direction:column;align-items:center;gap:12px}
+canvas.cv{display:block;background:#0e0a17;border:1px solid var(--line);border-radius:10px;touch-action:none;user-select:none;-webkit-user-select:none}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-weight:700;min-height:44px}
+.btn:hover{border-color:var(--mut)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.pri{background:var(--puz);border-color:var(--puz);color:#1b1400}
+.btn.on{background:var(--ink);color:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;width:100%}
+.pad{display:flex;gap:8px;justify-content:center;width:100%;max-width:420px}
+.pad .btn{flex:1;font-size:22px;min-height:58px;padding:6px;touch-action:none;user-select:none;-webkit-user-select:none}
+.g{display:grid;gap:6px;width:100%;user-select:none;-webkit-user-select:none}
+.c{aspect-ratio:1;min-width:0;padding:0;background:var(--panel);border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:clamp(13px,4.4vw,22px);line-height:1;overflow:hidden}
+.c.flat{cursor:default}
+.c.sel{outline:3px solid var(--puz);outline-offset:-3px}
+.c.dim{background:#120d1d;border-color:#241c39}
+.c.bad{color:var(--arc)}
+.c.fix{color:var(--mut)}
+.big{font:400 clamp(26px,9vw,44px)/1.1 var(--display);text-align:center;margin:0;text-wrap:balance}
+.note{color:var(--mut);text-align:center;margin:0;max-width:40ch}
+.dot{display:block;width:72%;height:72%;border-radius:50%}
+.card{width:58px;height:82px;border-radius:8px;background:#f6f1ff;color:#1a1326;display:grid;place-items:center;font-weight:700;font-size:22px;border:1px solid #cfc4e6}
+.card.red{color:#d42a4c}
+.card.back{background:repeating-linear-gradient(45deg,#4a3b78 0 6px,#3a2f5a 6px 12px);border-color:var(--line)}
+.hand{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;min-height:82px}
+.kb{display:flex;flex-direction:column;gap:6px;width:100%;max-width:460px}
+.kb div{display:flex;gap:4px;justify-content:center}
+.kb button{flex:1;min-width:0;max-width:44px;height:46px;padding:0;border-radius:6px;border:1px solid var(--line);background:var(--panel2);font-weight:700;text-transform:uppercase}
+.kb button.wide{max-width:64px;flex:1.5}
+.txt{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:20px;width:100%;max-width:340px;text-align:center}
+
+#over{position:absolute;inset:0;background:rgba(14,10,23,.86);display:grid;place-items:center;padding:16px;z-index:5}
+#over .box{background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--puz);border-radius:6px 6px 14px 14px;padding:22px 20px;text-align:center;display:flex;flex-direction:column;gap:12px;width:min(340px,100%)}
+#omsg{font:400 28px/1.1 var(--display);margin:0;text-wrap:balance}
+#oscore{margin:0;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+#onew{margin:0;color:var(--puz);font-weight:700}
+</style>
+</head>
+<body>
+<main id="home">
+  <header class="mast">
+    <h1>Pocket <span>Arcade</span></h1>
+    <p id="tag"></p>
+  </header>
+  <div class="tools">
+    <input id="q" type="search" placeholder="Find a game" autocomplete="off" aria-label="Find a game">
+    <button class="btn pri" id="rand" type="button">Random game</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="shelf" id="shelf"></div>
+</main>
+<section id="game" hidden>
+  <div id="bar">
+    <button id="back" type="button">&larr; Games</button>
+    <div id="gname"></div>
+    <div class="stat" id="sbox"><span id="slab">Score</span><b id="score">0</b></div>
+    <div class="stat" id="bbox">Best<b id="best">-</b></div>
+  </div>
+  <div id="wrap">
+    <p id="help"></p>
+    <div id="status"><span id="info"></span><span id="clock"></span></div>
+    <div id="stage"></div>
+    <div id="over" hidden>
+      <div class="box">
+        <p id="omsg"></p>
+        <p id="oscore"></p>
+        <p id="onew">New best</p>
+        <button class="btn pri" id="again" type="button">Play again</button>
+        <button class="btn" id="quit" type="button">All games</button>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
