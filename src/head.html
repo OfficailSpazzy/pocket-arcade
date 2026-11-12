@@ -74,6 +74,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .slot{width:8px;height:24px;border-radius:3px;background:#000;box-shadow:0 0 0 3px #3a3050,0 0 10px #ff9f1c}
 .coin span{font:400 9px "Press Start 2P",monospace;color:#ff9f1c;text-shadow:0 0 6px #ff9f1c;animation:blink 1.2s steps(2) infinite}
 @keyframes blink{50%{opacity:.25}}
+.coinfx{position:absolute;left:0;top:0;width:36px;height:36px;margin:-18px 0 0 -18px;z-index:6;pointer-events:none}
+.coinfx i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;font:normal 400 13px "Press Start 2P",monospace;color:#8a6400;background:radial-gradient(circle at 35% 30%,#fff7c8,#ffd23f 45%,#c99400 78%,#8a6400);box-shadow:inset 0 0 0 2px #fff1a0,inset 0 0 0 4px #c99400,0 3px 8px rgba(0,0,0,.55);animation:cspin .3s linear infinite}
+@keyframes cspin{0%{transform:scaleX(1)}25%{transform:scaleX(.12)}50%{transform:scaleX(-1)}75%{transform:scaleX(-.12)}100%{transform:scaleX(1)}}
+.slot.hit{animation:slothit .6s ease-out}
+@keyframes slothit{0%{box-shadow:0 0 0 3px #ffd23f,0 0 30px 10px #ffd23f}100%{box-shadow:0 0 0 3px #3a3050,0 0 10px #ff9f1c}}
+.coin span.credit{color:#2ee6b6;text-shadow:0 0 8px #2ee6b6;animation:none}
 #hmute{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid #3a3050;border-radius:8px;width:34px;height:30px;padding:0;font-size:14px;line-height:1}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){.marq::after,.marq h1,.ab-start,.coin span{animation:none}}
