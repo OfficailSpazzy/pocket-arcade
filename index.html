@@ -359,14 +359,47 @@ reg('duel','Paddle Duel','Arcade','Drag or use the arrow keys. First to 7 points
     g.textBaseline='alphabetic'});
 },{ns:true});
 
-reg('flap','Flap','Arcade','Tap or press space to flap. Fly through the gaps.',ctx=>{
-  const W=320,H=440,{cv,g}=ctx.canvas(W,H);let y=H/2,vy=0,pipes=[],t=0,sc=0,go=false;
-  const flap=()=>{go=true;vy=-320};ctx.on(cv,'pointerdown',e=>{e.preventDefault();flap()});ctx.keys(k=>{if(k==='space'||k==='up')flap()});
-  ctx.loop(dt=>{if(go){vy+=1000*dt;y+=vy*dt;t-=dt;if(t<=0){t=1.5;pipes.push({x:W,g:60+R(H-260),p:false})}
-      for(const p of pipes){p.x-=135*dt;if(!p.p&&p.x+44<70){p.p=true;ctx.score(++sc)}if(80>p.x&&60<p.x+44&&(y-10<p.g||y+10>p.g+135))return ctx.over('Bonk')}
-      pipes=pipes.filter(p=>p.x>-50);if(y>H-10||y<-30)return ctx.over('Bonk')}
-    cls(g,W,H);g.fillStyle=C.teal;pipes.forEach(p=>{g.fillRect(p.x,0,44,p.g);g.fillRect(p.x,p.g+135,44,H)});
-    g.fillStyle=C.yel;g.beginPath();g.arc(70,y,10,0,7);g.fill();if(!go){g.fillStyle=C.mut;g.font=FONT(16);g.textAlign='center';g.fillText('Tap to start',W/2,H/2+50)}});
+reg('flap','Flap','Arcade','Tap or press space to flap. Fly the duck through the gaps between the trees.',ctx=>{
+  const W=320,H=440,GR=H-34,GAP=135,TW=44,{cv,g}=ctx.canvas(W,H);let y=H/2,vy=0,pipes=[],t=0,sc=0,go=false,clock=0,wing=0,scroll=0,dead=0,feathers=[];
+  const clouds=Array.from({length:4},(_,i)=>({x:i*95+R(40),y:30+R(90),s:.7+Math.random()*.6}));
+  const quack=()=>{beep(520,.05,'sawtooth',.05,0,380);beep(440,.07,'sawtooth',.045,.05,300)};
+  const flap=()=>{if(dead)return;go=true;vy=-320;wing=.18;quack()};
+  ctx.on(cv,'pointerdown',e=>{e.preventDefault();flap()});ctx.keys(k=>{if(k==='space'||k==='up')flap()});
+  const crash=()=>{if(dead)return;dead=1;beep(180,.35,'sawtooth',.07,0,50);for(let i=0;i<10;i++)feathers.push({x:70,y,vx:(Math.random()-.5)*160,vy:-Math.random()*160,r:Math.random()*6,l:1})};
+  const leaves=(cx,cy,r,dark)=>{g.fillStyle=dark?'#1f6b3a':'#2e8b4a';[[-r*.55,0],[r*.55,0],[0,-r*.35],[0,r*.3]].forEach(([dx,dy])=>{g.beginPath();g.arc(cx+dx,cy+dy,r*.62,0,7);g.fill()});
+    g.fillStyle='rgba(180,255,160,.18)';g.beginPath();g.arc(cx-r*.3,cy-r*.3,r*.3,0,7);g.fill()};
+  const tree=(x,gy)=>{const cx=x+TW/2;
+    // hanging tree from the canopy
+    g.fillStyle='#6b4423';g.fillRect(cx-9,0,18,gy-18);g.fillStyle='#55361b';g.fillRect(cx+3,0,6,gy-18);leaves(cx,gy-14,24,true);
+    // standing tree from the ground
+    const by=gy+GAP;g.fillStyle='#7a4e2a';g.fillRect(cx-9,by+18,18,GR-by-18);g.fillStyle='#5e3b1f';g.fillRect(cx+3,by+18,6,GR-by-18);leaves(cx,by+16,24,false)};
+  const duck=(x,yy)=>{g.save();g.translate(x,yy);g.rotate(clamp(vy/600,-.45,1.1));
+    g.fillStyle='#f6c945';g.beginPath();g.ellipse(0,2,13,10,0,0,7);g.fill();g.beginPath();g.arc(9,-7,7.5,0,7);g.fill();
+    g.fillStyle='#f39c2a';g.beginPath();g.moveTo(15,-8);g.lineTo(24,-5);g.lineTo(15,-3);g.fill();
+    g.fillStyle='#1b1326';g.beginPath();g.arc(11,-9,1.8,0,7);g.fill();
+    g.fillStyle='#e0ad2c';g.beginPath();g.ellipse(-3,wing>0?-4:4,8,4.5,wing>0?-.6:.3,0,7);g.fill();g.restore()};
+  ctx.loop(dt=>{t+=dt;wing-=dt;
+    if(go&&!dead){vy+=1000*dt;y+=vy*dt;clock-=dt;scroll+=135*dt;if(clock<=0){clock=1.5;pipes.push({x:W,g:60+R(GR-60-GAP-40),p:false})}
+      for(const p of pipes){p.x-=135*dt;if(!p.p&&p.x+TW<70){p.p=true;ctx.score(++sc);beep(880,.06,'square',.05);beep(1320,.09,'square',.05,.06)}if(80>p.x&&60<p.x+TW&&(y-10<p.g||y+10>p.g+GAP))crash()}
+      pipes=pipes.filter(p=>p.x>-60);if(y>GR-10||y<-30)crash()}
+    else if(dead){vy+=1000*dt;y=Math.min(GR-10,y+vy*dt);dead+=dt;if(dead>1.6)return ctx.over('Bonk')}
+    else y=H/2+Math.sin(t*3)*6;
+    feathers.forEach(f=>{f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=260*dt;f.l-=dt*.8});feathers=feathers.filter(f=>f.l>0);
+    // sky, sun, clouds, hills
+    const sky=g.createLinearGradient(0,0,0,GR);sky.addColorStop(0,'#7fc8f8');sky.addColorStop(.7,'#c9ecff');sky.addColorStop(1,'#e8f7e4');g.fillStyle=sky;g.fillRect(0,0,W,H);
+    g.fillStyle='rgba(255,236,150,.5)';g.beginPath();g.arc(256,70,34,0,7);g.fill();g.fillStyle='#fff2b0';g.beginPath();g.arc(256,70,24,0,7);g.fill();
+    clouds.forEach(c=>{const cx=((c.x-scroll*.15*c.s)%(W+90)+W+90)%(W+90)-60;g.fillStyle='rgba(255,255,255,.9)';[[0,0,16],[18,-6,20],[38,0,15],[18,4,16]].forEach(([dx,dy,r])=>{g.beginPath();g.arc(cx+dx*c.s,c.y+dy*c.s,r*c.s,0,7);g.fill()})});
+    const hill=(col,base,amp,per,sp)=>{g.fillStyle=col;g.beginPath();g.moveTo(0,GR);for(let x=0;x<=W;x+=8)g.lineTo(x,base-amp*Math.sin((x+scroll*sp)/per)-amp*.5*Math.sin((x+scroll*sp)/(per*.43)));g.lineTo(W,GR);g.fill()};
+    hill('#a6d9a0',GR-70,22,70,.25);hill('#7cc47f',GR-36,16,50,.5);
+    pipes.forEach(p=>tree(p.x,p.g));
+    // ground: grass and dirt
+    g.fillStyle='#8b5a2b';g.fillRect(0,GR,W,H-GR);g.fillStyle='#4caf50';g.fillRect(0,GR,W,9);g.fillStyle='#3e9443';
+    for(let x=-(scroll%16);x<W;x+=16){g.beginPath();g.moveTo(x,GR+9);g.lineTo(x+4,GR+2);g.lineTo(x+8,GR+9);g.fill()}
+    g.fillStyle='rgba(0,0,0,.12)';for(let x=-(scroll%28);x<W;x+=28)g.fillRect(x,GR+18,10,3);
+    feathers.forEach(f=>{g.globalAlpha=Math.max(0,f.l);g.fillStyle='#fff6d8';g.beginPath();g.ellipse(f.x,f.y,4,1.8,f.r+t*4,0,7);g.fill()});g.globalAlpha=1;
+    duck(70,y);
+    if(go){g.fillStyle='#fff';g.strokeStyle='rgba(20,40,20,.55)';g.lineWidth=5;g.font='400 38px "Bungee",Impact,sans-serif';g.textAlign='center';g.strokeText(sc,W/2,62);g.fillText(sc,W/2,62)}
+    else{g.fillStyle='rgba(20,50,25,.75)';g.font=FONT(16,700);g.textAlign='center';g.fillText('Tap to start',W/2,H/2+56)}});
 });
 
 reg('defender','Star Defender','Arcade','Drag or use the arrow keys to steer. Your ship fires on its own. Stop the invaders reaching the ground.',ctx=>{
