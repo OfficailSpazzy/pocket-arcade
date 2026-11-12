@@ -76,21 +76,30 @@ const deck=()=>{const d=[];for(let s=0;s<4;s++)for(let r=1;r<=13;r++)d.push({r,s
 const cardEl=(p,c,deal)=>{if(!c){const e=$('div','card back',p);if(deal)anim(e,'pop');return e}const rk=['A',2,3,4,5,6,7,8,9,10,'J','Q','K'][c.r-1],su='♠♥♦♣'[c.s];
   const e=$('div','card'+(c.s===1||c.s===2?' red':''),p);$('span','ck',e).innerHTML=rk+'<br>'+su;$('span','cs',e,su);$('span','ck2',e).innerHTML=rk+'<br>'+su;if(deal)anim(e,'pop');return e};
 
-reg('blackjack','Blackjack','Cards & Reflex','Get closer to 21 than the dealer without going over. Each hand costs 10 chips. Cash out to bank your score.',ctx=>{
-  let chips=100,d=deck(),ph=[],dh=[],bet=10,live=false,hide=true,shownD=0,shownP=0;
+reg('blackjack','Blackjack','Cards & Reflex','Get closer to 21 than the dealer without going over. Tap the chips to set your bet before each deal. Cash out to bank your score.',ctx=>{
+  let chips=100,d=deck(),ph=[],dh=[],bet=10,wager=10,live=false,hide=true,shownD=0,shownP=0;
   const felt=$('div','felt',ctx.stage);const dl=$('p','note',felt,'Dealer');const dz=$('div','hand',felt);const msg=$('p','big',felt,'');msg.style.cssText='font-size:clamp(20px,6vw,28px);min-height:1.2em;color:#fff3c4;text-shadow:0 2px 0 #0006';const pz=$('div','hand',felt);const pl=$('p','note',felt,'You');
   const cb=$('div','',felt);cb.style.cssText='display:flex;align-items:center;gap:8px;font-weight:700;color:#fff3c4';const chip=$('span','',cb);chip.style.cssText='width:22px;height:22px;border-radius:50%;background:radial-gradient(circle,#ffd84a 40%,#c9940f 42% 60%,#ffd84a 62%);border:2px dashed #fff8';const ct=$('span','',cb);
+  // betting rack: tap chips to add, CLEAR to reset, ALL IN for everything
+  const rack=$('div','',ctx.stage);rack.style.cssText='display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px';
+  const bt=$('div','',rack);bt.style.cssText="font:12px 'Press Start 2P',monospace;color:#ffd84a;letter-spacing:1px";
+  const cr=$('div','',rack);cr.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center';
+  const setW=v=>{wager=clamp(v,5,chips);bt.textContent='BET  '+wager;bD.textContent='Deal '+wager;anim(bt,'bump')};
+  [[5,'#e9e4d8','#555'],[10,'#2f6fe0','#fff'],[25,'#1fa463','#fff'],[100,'#1c1c1c','#ffd84a'],[500,'#7b3fd1','#fff']].forEach(([v,bg,fg])=>{const c=$('button','',cr,String(v));
+    c.style.cssText=`width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,${bg} 52%,transparent 53%),repeating-conic-gradient(${bg} 0 30deg,#fff 30deg 45deg);color:${fg};border:2px solid #0006;font:9px 'Press Start 2P',monospace;box-shadow:0 3px 0 #0008;cursor:pointer;padding:0`;
+    c.setAttribute('aria-label','Add '+v);c.onclick=()=>{if(live)return;if(wager>=chips){SFX.bad();anim(bt,'shake');return}const add=rack._t?v:v-wager;rack._t=1;setW(wager+add);beep(1300,.03,'square',.04);beep(900,.04,'square',.035,.03)};c._v=v});
+  const r2=$('div','row',rack);ctx.btn(r2,'Clear',()=>{if(live)return;rack._t=0;wager=5;setW(5);SFX.tap()});ctx.btn(r2,'All in',()=>{if(live)return;rack._t=1;setW(chips);beep(220,.15,'sawtooth',.05,0,440)});
   const r=ctx.row();const bD=ctx.btn(r,'Deal',()=>deal(),'pri'),bH=ctx.btn(r,'Hit',()=>hit()),bS=ctx.btn(r,'Stand',()=>stand()),bX=ctx.btn(r,'Double',()=>dbl()),bC=ctx.btn(r,'Cash out',()=>ctx.over('Cashed out',chips,'end'));
   const val=h=>{let s=0,a=0;for(const c of h){s+=c.r>10?10:c.r===1?11:c.r;if(c.r===1)a++}while(s>21&&a){s-=10;a--}return s};
   const draw=()=>{dz.textContent='';dh.forEach((c,i)=>cardEl(dz,hide&&i===1?null:c,i>=shownD||(i===1&&!hide&&shownD<99)));shownD=hide?dh.length:99;pz.textContent='';ph.forEach((c,i)=>cardEl(pz,c,i>=shownP));shownP=ph.length;
-    pl.textContent=ph.length?'You: '+val(ph):'You';dl.textContent=dh.length&&!hide?'Dealer: '+val(dh):'Dealer';ct.textContent=chips+' chips';ctx.score(chips);bD.hidden=bC.hidden=live;bH.hidden=bS.hidden=bX.hidden=!live;bX.disabled=ph.length!==2||chips<bet*2};
+    pl.textContent=ph.length?'You: '+val(ph):'You';dl.textContent=dh.length&&!hide?'Dealer: '+val(dh):'Dealer';ct.textContent=chips+' chips'+(live?'   ·   bet '+bet:'');ctx.score(chips);bD.hidden=bC.hidden=live;rack.style.display=live?'none':'flex';if(!live){wager=clamp(wager,Math.min(5,chips),chips);bt.textContent='BET  '+wager;bD.textContent='Deal '+wager}bH.hidden=bS.hidden=bX.hidden=!live;bX.disabled=ph.length!==2||chips<bet*2};
   const settle=()=>{hide=false;live=false;const p=val(ph),q=val(dh);let w;if(p>21)w=-1;else if(p===21&&ph.length===2&&!(q===21&&dh.length===2))w=1.5;else if(q>21||p>q)w=1;else if(p===q)w=0;else w=-1;
     chips+=Math.round(bet*w);msg.textContent=p>21?'Bust':w>1?'Blackjack!':w>0?(q>21?'Dealer busts. You win':'You win'):w===0?'Push':'Dealer wins';anim(msg,'pop');
-    if(w>1){SFX.win();confetti()}else if(w>0)SFX.ok();else if(w<0)SFX.bad();else beep(500,.1,'triangle',.05);draw();if(chips<10)ctx.over('Out of chips',null,'lose')};
+    if(w>1){SFX.win();confetti()}else if(w>0)SFX.ok();else if(w<0)SFX.bad();else beep(500,.1,'triangle',.05);draw();if(chips<5)ctx.over('Out of chips',null,'lose')};
   const stand=()=>{SFX.tap();while(val(dh)<17)dh.push(d.pop());dh.slice(2).forEach((_,k)=>ctx.after(k*120,SFX.card));settle()};
   const hit=()=>{ph.push(d.pop());SFX.card();if(val(ph)>21)settle();else if(val(ph)===21)stand();else draw()};
   const dbl=()=>{bet*=2;ph.push(d.pop());SFX.card();if(val(ph)>21)settle();else stand()};
-  const deal=()=>{if(d.length<16)d=deck();bet=10;ph=[d.pop(),d.pop()];dh=[d.pop(),d.pop()];shownD=shownP=0;live=true;hide=true;msg.textContent='';[0,1,2,3].forEach(k=>ctx.after(k*90,SFX.card));if(val(ph)===21)return stand();draw()};
+  const deal=()=>{if(d.length<16)d=deck();bet=Math.min(wager,chips);ph=[d.pop(),d.pop()];dh=[d.pop(),d.pop()];shownD=shownP=0;live=true;hide=true;msg.textContent='';[0,1,2,3].forEach(k=>ctx.after(k*90,SFX.card));if(val(ph)===21)return stand();draw()};
   draw();
 },{sl:'Chips'});
 
