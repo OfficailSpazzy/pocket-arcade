@@ -80,16 +80,16 @@ reg('bricks','Brick Breaker','Arcade','Drag or use the arrow keys to move the pa
   const stars=Array.from({length:46},()=>({x:R(W),y:R(H),s:Math.random()*1.2+.4,p:Math.random()*6}));
   const rr=(x,y,w,h,r)=>{g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h)};
   const mk=()=>{bricks=[];for(let r=0;r<5;r++)for(let c=0;c<8;c++)bricks.push({x:8+c*38,y:50+r*18,c:r})};mk();
-  const launch=()=>{if(stuck){stuck=false;vx=(Math.random()-.5)*180;vy=-(230+lvl*20)}};
+  const launch=()=>{if(stuck){stuck=false;vx=(Math.random()-.5)*180;vy=-(230+lvl*20);beep(440,.09,'square',.05,0,880)}};
   p.tap=launch;ctx.keys(k=>{if(k==='space'||k==='up')launch()});
   const burst=b=>{for(let i=0;i<9;i++)parts.push({x:b.x+17,y:b.y+7,vx:(Math.random()-.5)*190,vy:(Math.random()-.7)*170,l:.5,c:ROW[b.c]})};
   ctx.loop(dt=>{t+=dt;if(ctx.held.left)p.x-=340*dt;if(ctx.held.right)p.x+=340*dt;p.x=clamp(p.x,32,W-32);
     if(stuck){bx=p.x;by=H-36;trail.length=0}else{bx+=vx*dt;by+=vy*dt;
-      if(bx<6){bx=6;vx=Math.abs(vx)}if(bx>W-6){bx=W-6;vx=-Math.abs(vx)}if(by<6){by=6;vy=Math.abs(vy)}
-      if(vy>0&&by>H-34&&by<H-18&&Math.abs(bx-p.x)<38){vy=-Math.abs(vy);vx=(bx-p.x)*6.5}
-      for(let i=0;i<bricks.length;i++){const b=bricks[i];if(bx>b.x-5&&bx<b.x+39&&by>b.y-5&&by<b.y+19){burst(b);bricks.splice(i,1);vy=-vy;sc+=10;ctx.score(sc);break}}
-      if(!bricks.length){lvl++;mk();stuck=true}
-      if(by>H+10){lives--;if(!lives)return ctx.over('Out of balls');stuck=true}
+      if(bx<6){bx=6;vx=Math.abs(vx);beep(260,.04,'triangle',.08)}if(bx>W-6){bx=W-6;vx=-Math.abs(vx);beep(260,.04,'triangle',.08)}if(by<6){by=6;vy=Math.abs(vy);beep(260,.04,'triangle',.08)}
+      if(vy>0&&by>H-34&&by<H-18&&Math.abs(bx-p.x)<38){vy=-Math.abs(vy);vx=(bx-p.x)*6.5;beep(330,.06,'square',.05)}
+      for(let i=0;i<bricks.length;i++){const b=bricks[i];if(bx>b.x-5&&bx<b.x+39&&by>b.y-5&&by<b.y+19){burst(b);beep(520+(4-b.c)*90,.07,'square',.05);bricks.splice(i,1);vy=-vy;sc+=10;ctx.score(sc);break}}
+      if(!bricks.length){lvl++;mk();stuck=true;[523,659,784,1047].forEach((f,i)=>beep(f,.11,'square',.06,i*.09))}
+      if(by>H+10){lives--;if(!lives){beep(220,.5,'sawtooth',.07,0,45);return ctx.over('Out of balls')}beep(300,.25,'sawtooth',.06,0,110);stuck=true}
       trail.push({x:bx,y:by});if(trail.length>10)trail.shift()}
     parts.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=420*dt;q.l-=dt});parts=parts.filter(q=>q.l>0);
     // backdrop
