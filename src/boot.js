@@ -52,24 +52,30 @@ const sfxOn=()=>{beep(70,.35,'sawtooth',.05,0,900);noise(.3,.06,.05,5000)};
 const sfxSelect=()=>{[523,659,784,1047,784,1047,1319].forEach((f,i)=>beep(f,.085,'square',.045,.18+i*.075))};
 const sfxCoinFly=()=>{beep(2093,.04,'square',.025);beep(2637,.04,'square',.02,.25);beep(2093,.04,'square',.02,.5);beep(2637,.04,'square',.018,.72)};
 const sfxCoinIn=()=>{noise(.06,.18,0,1800);beep(170,.07,'square',.06,0,90);beep(988,.07,'square',.05,.08);beep(1319,.34,'square',.05,.15)};
-function coinDrop(done){const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,cab=$id('cab'),bars=[...cab.querySelectorAll('.coin .slot')],st=$id('start'),lab=cab.querySelector('.coin span');
-  const fin=()=>{bars.forEach(b=>{b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit')});sfxCoinIn();lab.style.opacity='';lab.textContent='CREDIT 01';lab.classList.add('credit');done()};
+function coinDrop(done){const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,cab=$id('cab'),rej=$id('rej1'),slit=rej.querySelector('.slit'),st=$id('start'),lab=$id('ctext');
+  const fin=()=>{rej.classList.remove('lit');void rej.offsetWidth;rej.classList.add('lit');sfxCoinIn();lab.style.opacity='';lab.textContent='CREDIT 01';lab.classList.add('credit');done()};
   if(reduce||!cab.animate){fin();return}
-  const c=cab.getBoundingClientRect(),a=st.getBoundingClientRect(),l=bars[0].getBoundingClientRect(),r=bars[bars.length-1].getBoundingClientRect();
-  const ax=a.left-c.left+a.width/2,ay=a.top-c.top+a.height/2,bx=(l.left+l.width/2+r.left+r.width/2)/2-c.left,by=l.top-c.top+l.height/2;
+  const c=cab.getBoundingClientRect(),a=st.getBoundingClientRect(),s2=slit.getBoundingClientRect();
+  const ax=a.left-c.left+a.width/2,ay=a.top-c.top+a.height/2,bx=s2.left-c.left+s2.width/2,by=s2.top-c.top+s2.height/2,sh=s2.height/36;
   const coin=$('div','coinfx',cab),face=$('i','',coin,'S');const T=(x,y,sx,sy)=>`translate(${x}px,${y}px) scale(${sx},${sy==null?sx:sy})`;
-  const mx=(ax+bx)/2,peak=Math.min(ay,by)-90,D=1100;sfxCoinFly();
+  const mx=(ax+bx)/2,peak=Math.min(ay,by)-110,D=1150;sfxCoinFly();
   const an=coin.animate([
-    {transform:T(ax,ay,.3),opacity:0,clipPath:'inset(0 0 0 0)'},
-    {transform:T(ax,ay-40,1.1),opacity:1,clipPath:'inset(0 0 0 0)',offset:.12},
-    {transform:T(mx,peak,1.3),opacity:1,clipPath:'inset(0 0 0 0)',offset:.45},
-    {transform:T(bx,by-46,1),opacity:1,clipPath:'inset(0 0 0 0)',offset:.68},
-    {transform:T(bx,by-18,.12,1),opacity:1,clipPath:'inset(0 0 0 0)',offset:.8},
-    {transform:T(bx,by+18,.12,1),opacity:1,clipPath:'inset(0 0 100% 0)'}],{duration:D,easing:'cubic-bezier(.35,0,.65,1)',fill:'forwards'});
-  ctx_t(()=>{face.style.animation='none';face.style.transform='scaleX(1)';lab.style.transition='opacity .12s';lab.style.opacity='0'},D*.66);
-  ctx_t(()=>{beep(1760,.03,'square',.03)},D*.8);
-  an.onfinish=()=>{coin.remove();fin()};ctx_t(()=>{if(coin.isConnected){coin.remove();fin()}},D+600)}
-const ctx_t=(f,ms)=>setTimeout(f,ms);
+    {transform:T(ax,ay,.3),opacity:0,filter:'brightness(1)'},
+    {transform:T(ax,ay-40,1.1),opacity:1,offset:.12},
+    {transform:T(mx,peak,1.3),opacity:1,offset:.42},
+    {transform:T(bx,by-58,1.05),opacity:1,offset:.64},
+    {transform:T(bx,by-30,.13,1),opacity:1,offset:.76},
+    {transform:T(bx,by,.13,sh*1.05),opacity:1,filter:'brightness(1)',offset:.88},
+    {transform:T(bx,by,.04,sh*.7),opacity:0,filter:'brightness(.4)'}],{duration:D,easing:'cubic-bezier(.35,0,.65,1)',fill:'forwards'});
+  setTimeout(()=>{face.style.animation='none';face.style.transform='scaleX(1)';lab.style.transition='opacity .12s';lab.style.opacity='0'},D*.62);
+  setTimeout(()=>{beep(1760,.03,'square',.03)},D*.76);
+  an.onfinish=()=>{coin.remove();fin()};setTimeout(()=>{if(coin.isConnected){coin.remove();fin()}},D+600)}
+function eject(btn){if(busy)return;const cab=$id('cab'),mech=btn.parentNode,ret=mech.querySelector('.ret'),slit=btn.querySelector('.slit');btn.classList.remove('lit');void btn.offsetWidth;btn.classList.add('lit');
+  beep(220,.05,'square',.05);noise(.06,.14,0,1500);[0,1,2].forEach(i=>beep(1400-i*200,.03,'square',.025,.12+i*.07));beep(140,.06,'triangle',.12,.36);
+  if(!cab.animate||matchMedia('(prefers-reduced-motion: reduce)').matches)return;const c=cab.getBoundingClientRect(),s2=slit.getBoundingClientRect(),r2=ret.getBoundingClientRect();
+  const x=s2.left-c.left+s2.width/2,y0=s2.top-c.top+s2.height*.7,y1=r2.top-c.top+r2.height/2;const k=$('div','ejectc',cab);
+  const an=k.animate([{transform:`translate(${x}px,${y0}px) scale(.2,.6)`,opacity:0},{transform:`translate(${x}px,${y0+4}px) scale(.9)`,opacity:1,offset:.2},{transform:`translate(${x}px,${y1}px) scale(.9)`,opacity:1,offset:.55},{transform:`translate(${x}px,${y1-5}px) scale(.9)`,offset:.68},{transform:`translate(${x}px,${y1}px) scale(.9)`,opacity:1,offset:.8},{transform:`translate(${x}px,${y1+2}px) scale(.7,.4)`,opacity:0}],{duration:700,easing:'ease-in',fill:'forwards'});
+  an.onfinish=()=>k.remove()}
 function led(){const L=$id('led');L.classList.toggle('typing',!!typed);L.textContent=typed?(typed.length===1?typed+'_':typed):pad2(sel+1)}
 function announce(){$id('sr').textContent='Game '+(sel+1)+' of '+NG+': '+GAMES[sel].name+', '+GAMES[sel].cat}
 function press(b){if(!b)return;b.classList.add('down');setTimeout(()=>b.classList.remove('down'),110)}
@@ -82,7 +88,7 @@ function typeDigit(d){if(busy)return;typed=(typed+d).slice(-2);if(typed==='0'){t
 function startSel(){if(busy)return;if(typed){commit();return}busy=true;press($id('start'));
   coinDrop(()=>{fx={type:'select',t:0};sfxSelect();const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
     setTimeout(()=>{if(reduce)return;noise(.45,.07,0,700);beep(180,.45,'sawtooth',.035,0,1800);const cab=$id('cab'),c=cab.getBoundingClientRect(),s=scr.getBoundingClientRect();cab.style.transformOrigin=`${s.left-c.left+s.width/2}px ${s.top-c.top+s.height/2}px`;cab.classList.add('zoom')},900);
-    setTimeout(()=>{nav(GAMES[sel].id);$id('cab').classList.remove('zoom');const lab=$id('cab').querySelector('.coin span');lab.textContent='INSERT COIN';lab.classList.remove('credit');busy=false},1400)})}
+    setTimeout(()=>{nav(GAMES[sel].id);$id('cab').classList.remove('zoom');const lab=$id('ctext');lab.textContent='INSERT COIN';lab.classList.remove('credit');busy=false},1400)})}
 
 function show(id){const gm=GAMES.find(x=>x.id===id);shown=gm?id:'';if(gm){const i=GAMES.indexOf(gm);if(i!==sel){sel=i;store.set('sel',sel)}cancelAnimationFrame(raf);raf=0;play(gm)}
   else{stopGame();el.game.hidden=true;el.home.hidden=false;fx={type:'on',t:0};sfxOn();led();announce();if(!raf){lastT=0;raf=requestAnimationFrame(frame)}}}
@@ -94,7 +100,7 @@ function boot(){
   const hold=(b,d)=>{let iv=null,to=null;const stop=()=>{clearTimeout(to);clearInterval(iv)};b.addEventListener('pointerdown',e=>{e.preventDefault();step(d);stop();to=setTimeout(()=>{iv=setInterval(()=>step(d),150)},420)});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,stop));
     b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();step(d)}})};
   hold($id('prev'),-1);hold($id('next'),1);
-  $id('start').addEventListener('click',startSel);
+  $id('start').addEventListener('click',startSel);$id('rej1').addEventListener('click',e=>eject(e.currentTarget));$id('rej2').addEventListener('click',e=>eject(e.currentTarget));
   let sx=null;scr.addEventListener('pointerdown',e=>{sx={x:e.clientX}});scr.addEventListener('pointerup',e=>{if(!sx)return;const dx=e.clientX-sx.x;sx=null;if(Math.abs(dx)>36)step(dx<0?1:-1);else startSel()});
   window.addEventListener('keydown',e=>{if(el.home.hidden||e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key,tg=e.target&&e.target.tagName;if(tg==='BUTTON'&&(k==='Enter'||k===' '))return;
     if(k==='ArrowRight'||k==='ArrowDown'){e.preventDefault();step(1)}else if(k==='ArrowLeft'||k==='ArrowUp'){e.preventDefault();step(-1)}

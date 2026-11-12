@@ -80,10 +80,28 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .slot.hit{animation:slothit .6s ease-out}
 @keyframes slothit{0%{box-shadow:0 0 0 3px #ffd23f,0 0 30px 10px #ffd23f}100%{box-shadow:0 0 0 3px #3a3050,0 0 10px #ff9f1c}}
 .coin span.credit{color:#2ee6b6;text-shadow:0 0 8px #2ee6b6;animation:none}
-#hmute{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid #3a3050;border-radius:8px;width:34px;height:30px;padding:0;font-size:14px;line-height:1}
+.door{margin-top:10px;position:relative;display:flex;align-items:center;justify-content:space-evenly;padding:9px 40px 8px;border-radius:10px;background:linear-gradient(180deg,#615d78,#3a3652 45%,#28243c);box-shadow:inset 0 2px 0 rgba(255,255,255,.28),inset 0 -3px 0 rgba(0,0,0,.45),0 0 0 2px #120a24}
+.door::before,.door::after{content:"";position:absolute;top:6px;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e6e3f0,#6c6880);box-shadow:0 52px 0 #8a869c}
+.door::before{left:7px}.door::after{right:7px}
+.mech{display:flex;flex-direction:column;align-items:center;gap:4px}
+.price{font:400 8px "Press Start 2P",monospace;color:#ffd23f;text-shadow:0 0 6px #ff9f1c;background:#120a24;padding:3px 5px 2px;border-radius:3px;box-shadow:0 0 0 1px #1d1830}
+.rej{position:relative;width:38px;height:44px;border:0;padding:0;border-radius:7px;cursor:pointer;touch-action:manipulation;background:radial-gradient(ellipse at 50% 35%,#ffe2a8,#ff8a1f 50%,#b23c00);box-shadow:0 0 0 3px #17141f,0 0 0 5px #9a96ac,0 0 16px rgba(255,140,40,.65),inset 0 -4px 0 rgba(0,0,0,.28),inset 0 3px 0 rgba(255,255,255,.35);transition:transform .06s}
+.rej:active{transform:scale(.93)}
+.rej.lit{animation:litflash .6s ease-out}
+@keyframes litflash{0%{filter:brightness(1.9) saturate(1.3);box-shadow:0 0 0 3px #17141f,0 0 0 5px #fff3c4,0 0 34px 8px rgba(255,200,80,.95)}100%{filter:none}}
+.slit{position:absolute;left:50%;top:8px;bottom:8px;width:5px;margin-left:-2.5px;border-radius:3px;background:#1a0700;box-shadow:inset 0 0 3px #000,0 0 0 1px rgba(255,255,255,.3)}
+.ret{position:relative;width:34px;height:11px;border-radius:0 0 9px 9px;background:#0d0b14;box-shadow:inset 0 3px 5px #000,0 0 0 2px #9a96ac}
+.dmid{display:flex;flex-direction:column;align-items:center;gap:6px}
+.ctext{font:400 9px "Press Start 2P",monospace;color:#ff9f1c;text-shadow:0 0 6px #ff9f1c;animation:blink 1.2s steps(2) infinite;white-space:nowrap}
+.ctext.credit{color:#2ee6b6;text-shadow:0 0 8px #2ee6b6;animation:none}
+.lock{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#e6e3f0,#8a869c 60%,#4a4660);box-shadow:0 1px 0 #000;position:relative}
+.lock::after{content:"";position:absolute;left:7px;top:4px;width:2px;height:8px;border-radius:1px;background:#1d1a28}
+.ptr{font:400 5px/1.5 "Press Start 2P",monospace;color:#c9c4dc;text-align:center;letter-spacing:.05em}
+.ejectc{position:absolute;left:0;top:0;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;z-index:6;pointer-events:none;background:radial-gradient(circle at 35% 30%,#fff7c8,#ffd23f 45%,#c99400 78%,#8a6400);box-shadow:inset 0 0 0 1.5px #fff1a0,0 2px 4px rgba(0,0,0,.5)}
+#hmute{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid #3a3050;border-radius:8px;width:34px;height:30px;padding:0;font-size:14px;line-height:1}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (prefers-reduced-motion:reduce){.marq::after,.marq h1,.ab-start,.coin span{animation:none}}
-@media (max-height:700px){.ab-dir{width:46px;height:46px}.ab-start{width:66px;height:66px}.keys{gap:7px 6px}.ab-key{max-width:38px}.marq h1{font-size:28px}}
+@media (prefers-reduced-motion:reduce){.marq::after,.marq h1,.ab-start,.ctext{animation:none}}
+@media (max-height:700px){.cab{padding:8px 10px 9px}.marq{padding:7px 8px 6px}.bezel{margin-top:7px;padding:8px}.deck{margin-top:8px;padding:9px 10px 10px;gap:9px}.door{margin-top:7px;padding:6px 40px 5px}.rej{width:34px;height:36px}.ret{height:8px}.mech{gap:3px}.ab-dir{width:44px;height:44px}.stick{height:54px}.stick .arm{height:32px}.ab-start{width:62px;height:62px}.keys{gap:6px 6px}.ab-key{max-width:36px}.marq h1{font-size:26px}.marq h1 span{margin-top:3px}#home{padding-top:calc(8px + env(safe-area-inset-top));padding-bottom:calc(8px + env(safe-area-inset-bottom))}}
 .mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
 .mast h1{font:400 clamp(30px,9vw,58px)/.95 var(--display);margin:0;letter-spacing:.01em;text-wrap:balance}
 .mast h1 span{color:var(--puz)}
@@ -201,7 +219,12 @@ canvas.cv{display:block;background:#0e0a17;border:1px solid var(--line);border-r
         <div class="keys" id="keys"></div>
       </div>
     </div>
-    <div class="coin"><div class="slot"></div><span>INSERT COIN</span><div class="slot"></div><button id="hmute" type="button" aria-label="Sound on">&#128266;</button></div>
+    <div class="door">
+      <div class="mech"><span class="price">25&cent;</span><button class="rej" id="rej1" type="button" aria-label="Coin slot 1. Press to eject a coin."><i class="slit"></i></button><span class="ret"></span></div>
+      <div class="dmid"><span id="ctext" class="ctext">INSERT COIN</span><span class="lock" aria-hidden="true"></span><span class="ptr">PRESS TO<br>EJECT</span></div>
+      <div class="mech"><span class="price">25&cent;</span><button class="rej" id="rej2" type="button" aria-label="Coin slot 2. Press to eject a coin."><i class="slit"></i></button><span class="ret"></span></div>
+      <button id="hmute" type="button" aria-label="Sound on">&#128266;</button>
+    </div>
   </div>
   <p id="sr" class="sr" aria-live="polite"></p>
 </main>
