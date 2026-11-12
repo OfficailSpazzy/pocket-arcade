@@ -82,7 +82,7 @@ function diffMenu(game){const ctx=makeCtx(game);cur=ctx;ctx.game=game;el.help.te
     const best=store.get('b_'+game.id+'_'+d[0]);if(best!=null&&!game.ns)$('span','dbest',b,'HI-SCORE '+best);ctx.on(b,'click',()=>choose(i));return b});
   $('p','dhint',box,'\u25B2 \u25BC TO MOVE \u00B7 ENTER TO PLAY');
   ctx.keys(k=>{if(k==='up'||k==='left'){pick=(pick+2)%3;draw();SFX.tick()}else if(k==='down'||k==='right'){pick=(pick+1)%3;draw();SFX.tick()}else if(k==='enter'||k==='space')choose(pick)});draw()}
-function play(game,diff){stopGame();el.home.hidden=true;el.game.hidden=false;el.gname.textContent=game.name.toUpperCase();{const m=document.getElementById('gmeta');if(m)m.textContent='GAME '+String(GAMES.indexOf(game)+1).padStart(2,'0')+' \u00B7 '+game.cat.toUpperCase()+(diff?' \u00B7 '+diff.toUpperCase():'')}el.help.textContent=game.help;el.slab.textContent=game.sl||'Score';el.score.textContent='0';
+function play(game,diff){stopGame();el.home.hidden=true;el.game.hidden=false;el.gname.textContent=game.name.toUpperCase();{const m=document.getElementById('gmeta');if(m)m.textContent=(game._sec?game._sec+' ':'')+'GAME '+String(game._no||GAMES.indexOf(game)+1).padStart(2,'0')+' \u00B7 '+game.cat.toUpperCase()+(diff?' \u00B7 '+diff.toUpperCase():'')}el.help.textContent=game.help;el.slab.textContent=game.sl||'Score';el.score.textContent='0';
   el.sbox.hidden=el.bbox.hidden=!!game.ns;const b=store.get(bestKey(game,diff));el.best.textContent=b==null?'-':b;el.wrap.scrollTop=0;
   if(game.ai&&!diff){diffMenu(game);return}
   cur=makeCtx(game);cur.game=game;cur.diff=diff||'medium';try{game.fn(cur)}catch(e){console.error(e);$('p','note',el.stage,'This game hit an error. Go back and try another.')}}

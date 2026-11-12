@@ -1,6 +1,6 @@
 # Spazzy's Arcade
 
-40 games in one retro arcade cabinet web app. Works on phones and at a keyboard, and can be added to a phone's home screen.
+42 games in one retro arcade cabinet web app, split into Online (vs computer) and Offline (solo) sections. Works on phones and at a keyboard, and can be added to a phone's home screen.
 
 Play: https://officailspazzy.github.io/pocket-arcade/
 

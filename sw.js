@@ -1,6 +1,6 @@
 // Offline support. The page itself is fetched from the network first so updates show up
 // right away; the saved copy is only used when there is no connection.
-const CACHE='spazzys-arcade-v9';
+const CACHE='spazzys-arcade-v10';
 const SHELL=['./','index.html','manifest.json','icon-192.png','icon-512.png','icon-180.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

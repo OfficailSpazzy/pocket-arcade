@@ -58,6 +58,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .hb{width:48px;height:48px;--c:#1d6fd6;--d:#0f3f80;background:radial-gradient(circle,var(--c) 0 56%,var(--d) 57% 63%,var(--c) 64% 100%);box-shadow:0 0 0 2px #000,0 4px 0 #000,inset 0 -3px 4px rgba(0,0,0,.35),inset 0 2px 2px rgba(255,255,255,.25)}
 .hb:active,.hb.down{transform:translateY(2px);box-shadow:0 0 0 2px #000,0 2px 0 #000,inset 0 3px 5px rgba(0,0,0,.45)}
 .hb.red{--c:#d81e1e;--d:#7a0c0c;width:62px;height:62px}
+.hb.wht{--c:#ece6d6;--d:#9a9282;width:40px;height:40px;margin-top:11px}
 .stick{position:relative;width:46px;height:58px}
 .stick .plate{position:absolute;left:3px;bottom:0;width:40px;height:22px;border-radius:3px;background:#050505;box-shadow:0 0 0 1px #2a2a2e}
 .stick .arm{position:absolute;left:20px;bottom:10px;width:6px;height:34px;border-radius:2px;background:linear-gradient(90deg,#6a6a72,#c9c9d0,#5a5a62);transform-origin:50% 100%;transition:transform .1s}
@@ -100,7 +101,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 @keyframes cspin{0%{transform:scaleX(1)}25%{transform:scaleX(.12)}50%{transform:scaleX(-1)}75%{transform:scaleX(-.12)}100%{transform:scaleX(1)}}
 .ejectc{position:absolute;left:0;top:0;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;z-index:6;pointer-events:none;background:radial-gradient(circle at 38% 32%,#f4f1ea,#c9c4b8 50%,#8a857a);box-shadow:inset 0 0 0 1.5px #e8e4da,0 2px 3px rgba(0,0,0,.6)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (max-height:700px){.cab{padding-bottom:9px}.marq{padding:6px 8px 13px;border-top-width:5px;border-bottom-width:5px}.marq h1{font-size:26px}.bezel{padding:6px 14px}.bz.b{display:none}.crt{margin-top:14px}.cp{padding:13px 14px 9px;gap:9px}.hb{width:42px;height:42px}.hb.red{width:54px;height:54px}.stick{height:50px}.stick .arm{height:28px}.ab-key{height:28px}.keys{gap:7px 6px}.door{margin-top:7px;padding:5px 10px}.mech{width:50px;height:64px;padding:5px}.mt b{font-size:14px}.mt span{font-size:7px}.ret{height:20px}}
+@media (max-height:700px){.cab{padding-bottom:9px}.marq{padding:6px 8px 13px;border-top-width:5px;border-bottom-width:5px}.marq h1{font-size:26px}.bezel{padding:6px 14px}.bz.b{display:none}.crt{margin-top:14px}.cp{padding:13px 14px 9px;gap:9px}.hb{width:42px;height:42px}.hb.red{width:54px;height:54px}.hb.wht{width:34px;height:34px;margin-top:10px}.stick{height:50px}.stick .arm{height:28px}.ab-key{height:28px}.keys{gap:7px 6px}.door{margin-top:7px;padding:5px 10px}.mech{width:50px;height:64px;padding:5px}.mt b{font-size:14px}.mt span{font-size:7px}.ret{height:20px}}
 .mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
 .mast h1{font:400 clamp(30px,9vw,58px)/.95 var(--display);margin:0;letter-spacing:.01em;text-wrap:balance}
 .mast h1 span{color:var(--puz)}
@@ -261,7 +262,7 @@ canvas.cv{border-radius:4px;border-color:#222}
   <div class="cab" id="cab">
     <div class="marq"><h1><span class="l1">SPAZZY'S</span><span class="l2">ARCADE</span></h1></div>
     <div class="bezel">
-      <p class="bz"><i>&#9668;</i> SELECT GAME <i>&#9658;</i> &nbsp; PUSH START</p>
+      <p class="bz"><i>&#9668;</i> SELECT <i>&#9658;</i> &nbsp; MODE &nbsp; PUSH START</p>
       <div class="crt"><canvas id="scr" aria-label="Arcade screen. Swipe to change game, tap to start."></canvas></div>
       <p class="bz b">1 PLAYER &middot; 40 GAMES IN 1</p>
     </div>
@@ -272,6 +273,7 @@ canvas.cv{border-radius:4px;border-color:#222}
           <div class="stick" id="stick" aria-hidden="true"><div class="plate"></div><div class="arm"><div class="knob"></div></div></div>
           <button class="ab hb" id="next" type="button" aria-label="Next game"></button>
         </div><span class="lbl"><i>&#9668;</i> SELECT GAME <i>&#9658;</i></span></div>
+        <div class="grp"><button class="ab hb wht" id="modeb" type="button" aria-label="Back to mode select"></button><span class="lbl">MODE</span></div>
         <div class="grp"><button class="ab hb red" id="start" type="button" aria-label="Start game"></button><span class="lbl">1P START</span></div>
       </div>
       <div class="row2">
