@@ -98,11 +98,11 @@ function startSel(){if(busy)return;if(typed){commit();return}if(!mode){press($id
     setTimeout(()=>{nav(curGame().id);$id('cab').classList.remove('zoom');credits=0;busy=false},1400)})}
 
 function show(id){const gm=GAMES.find(x=>x.id===id);shown=gm?id:'';if(gm){mode=gm.ai?'online':'offline';sel=LISTS[mode].indexOf(gm);store.set('sel_'+mode,sel);cancelAnimationFrame(raf);raf=0;play(gm)}
-  else{stopGame();el.game.hidden=true;el.home.hidden=false;fx={type:'on',t:0};sfxOn();led();announce();if(!raf){lastT=0;raf=requestAnimationFrame(frame)}}}
+  else{stopGame();el.game.hidden=true;el.home.hidden=false;setTimeout(fitHome,0);fx={type:'on',t:0};sfxOn();led();announce();if(!raf){lastT=0;raf=requestAnimationFrame(frame)}}}
 function setShown(gm){mode=gm.ai?'online':'offline';sel=LISTS[mode].indexOf(gm);store.set('sel_'+mode,sel);shown=gm.id;try{history.replaceState(null,'','#'+gm.id)}catch(e){}cancelAnimationFrame(raf);raf=0}
 function nav(id){try{if(id)location.hash=id;else history.replaceState(null,'',location.pathname+location.search)}catch(e){try{location.hash=id||''}catch(e2){}}show(id)}
 
-function boot(){
+function boot(){setTimeout(fitHome,50);if(document.fonts)document.fonts.ready.then(fitHome);
   const keys=$id('keys');[1,2,3,4,5,6,7,8,9,0].forEach(n=>{const b=$('button','ck ab-key',keys,String(n));b.setAttribute('aria-label','Number '+n);b.addEventListener('click',()=>typeDigit(String(n)))});
   $id('clr').addEventListener('click',()=>{typed='';clearTimeout(typeT);beep(300,.05,'square',.03);led()});
   const hold=(b,d)=>{let iv=null,to=null;const stop=()=>{clearTimeout(to);clearInterval(iv)};b.addEventListener('pointerdown',e=>{e.preventDefault();step(d);stop();to=setTimeout(()=>{iv=setInterval(()=>step(d),150)},420)});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,stop));

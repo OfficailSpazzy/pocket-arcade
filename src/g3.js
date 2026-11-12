@@ -36,7 +36,7 @@ reg('hangman','Hangman','Words & Math','Guess the word one letter at a time. Six
     else{miss++;sway=0;bs[k].style.background='#3a1a26';bs[k].style.color='#7a5060';SFX.thud();beep(180,.12,'sawtooth',.04);draw();if(miss>=6){[...out.children].forEach(s=>{if(!s.textContent){s.textContent=s.dataset.ch.toUpperCase();s.style.color='#ff5d7a'}});ctx.over('Run over',undefined,'lose',word)}}};
   [...'abcdefghijklmnopqrstuvwxyz'].forEach(ch=>{const b=$('button','c',kg,ch.toUpperCase());b.style.aspectRatio='auto';b.style.height='42px';b.style.borderRadius='8px';bs[ch]=b;ctx.on(b,'click',()=>{if(!ctx.paused)press(ch)})});
   ctx.keys(press);fresh();ctx.loop(dt=>{if(miss>5){sway+=dt*3;fig()}});
-},{sl:'Words'});
+},{sl:'Words',fit:true});
 
 reg('typing','Typing Sprint','Words & Math','Type each word as it appears. It moves on by itself when you get it right. You have 45 seconds from your first key.',ctx=>{
   const pool=shuffle([...W5,...WL]);let i=0,sc=0,started=false,chars=0,combo=0;const box=$('div','',ctx.stage);box.style.cssText='background:#211a33;border-radius:16px;padding:18px 12px;width:100%;max-width:380px;text-align:center';
@@ -88,7 +88,7 @@ reg('blackjack','Blackjack','Cards & Reflex','Get closer to 21 than the dealer w
   [[5,'#e9e4d8','#555'],[10,'#2f6fe0','#fff'],[25,'#1fa463','#fff'],[100,'#1c1c1c','#ffd84a'],[500,'#7b3fd1','#fff']].forEach(([v,bg,fg])=>{const c=$('button','',cr,String(v));
     c.style.cssText=`width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,${bg} 52%,transparent 53%),repeating-conic-gradient(${bg} 0 30deg,#fff 30deg 45deg);color:${fg};border:2px solid #0006;font:9px 'Press Start 2P',monospace;box-shadow:0 3px 0 #0008;cursor:pointer;padding:0`;
     c.setAttribute('aria-label','Add '+v);c.onclick=()=>{if(live)return;if(wager>=chips){SFX.bad();anim(bt,'shake');return}const add=rack._t?v:v-wager;rack._t=1;setW(wager+add);beep(1300,.03,'square',.04);beep(900,.04,'square',.035,.03)};c._v=v});
-  const r2=$('div','row',rack);ctx.btn(r2,'Clear',()=>{if(live)return;rack._t=0;wager=5;setW(5);SFX.tap()});ctx.btn(r2,'All in',()=>{if(live)return;rack._t=1;setW(chips);beep(220,.15,'sawtooth',.05,0,440)});
+  const r2=cr;ctx.btn(r2,'Clear',()=>{if(live)return;rack._t=0;wager=5;setW(5);SFX.tap()});ctx.btn(r2,'All in',()=>{if(live)return;rack._t=1;setW(chips);beep(220,.15,'sawtooth',.05,0,440)});
   const r=ctx.row();const bD=ctx.btn(r,'Deal',()=>deal(),'pri'),bH=ctx.btn(r,'Hit',()=>hit()),bS=ctx.btn(r,'Stand',()=>stand()),bX=ctx.btn(r,'Double',()=>dbl()),bC=ctx.btn(r,'Cash out',()=>ctx.over('Cashed out',chips,'end'));
   const val=h=>{let s=0,a=0;for(const c of h){s+=c.r>10?10:c.r===1?11:c.r;if(c.r===1)a++}while(s>21&&a){s-=10;a--}return s};
   const draw=()=>{dz.textContent='';dh.forEach((c,i)=>cardEl(dz,hide&&i===1?null:c,i>=shownD||(i===1&&!hide&&shownD<99)));shownD=hide?dh.length:99;pz.textContent='';ph.forEach((c,i)=>cardEl(pz,c,i>=shownP));shownP=ph.length;

@@ -82,6 +82,21 @@ function diffMenu(game){stopGame();const ctx=makeCtx(game);cur=ctx;ctx.game=game
     const best=store.get('b_'+game.id+'_'+d[0]);if(best!=null&&!game.ns)$('span','dbest',b,'HI-SCORE '+best);ctx.on(b,'click',()=>choose(i));return b});
   $('p','dhint',box,'\u25B2 \u25BC TO MOVE \u00B7 ENTER TO PLAY');
   ctx.keys(k=>{if(k==='up'||k==='left'){pick=(pick+DIFFS.length-1)%DIFFS.length;draw();SFX.tick()}else if(k==='down'||k==='right'){pick=(pick+1)%DIFFS.length;draw();SFX.tick()}else if(k==='enter'||k==='space')choose(pick)});draw()}
+// ---- no scrolling unless there is truly no room ----
+// 1) the cabinet on the home screen shrinks to fit the phone
+function fitHome(){const cab=document.getElementById('cab'),home=el.home;if(!cab||home.hidden)return;cab.style.zoom='';const cs=getComputedStyle(home),avail=home.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom),need=cab.offsetHeight;if(need<=avail)return;let z=Math.max(.6,avail/need);for(let k=0;k<3;k++){cab.style.zoom=z;const o=home.scrollHeight-home.clientHeight;if(o<=0||z<=.6)break;z=Math.max(.6,z*(1-(o+2)/home.clientHeight))}}
+// 2) in a game: shrink the board a little first, then hide the how-to text, and only then allow scrolling
+let fitRaf=0;function fitStage(){cancelAnimationFrame(fitRaf);fitRaf=requestAnimationFrame(()=>{const w=el.wrap,st=el.stage;if(el.game.hidden)return;st.style.zoom='';el.help.style.display='';
+  const over=()=>w.scrollHeight-w.clientHeight;if(over()<=1)return;
+  // games you steer by touching the canvas never get resized, only lose the how-to text
+  const g=cur&&cur.game;if(st.querySelector('canvas')&&!(g&&g.fit)){el.help.style.display='none';return}
+  const shrink=min=>{for(let z=.96;z>=min-.001&&over()>1;z-=.03)st.style.zoom=z.toFixed(2)};shrink(.88);if(over()<=1)return;
+  st.style.zoom='';el.help.style.display='none';shrink(.7)})}
+new MutationObserver(()=>fitStage()).observe(el.stage,{childList:true,subtree:true});
+addEventListener('resize',()=>{fitHome();fitStage()});
+// 3) a finger drag only scrolls something that actually has more to show
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)return;let n=e.target;while(n&&n!==document.body){if(n.scrollHeight>n.clientHeight+1){const o=getComputedStyle(n).overflowY;if(o==='auto'||o==='scroll')return}n=n.parentElement}if(e.cancelable)e.preventDefault()},{passive:false});
+
 function play(game,diff,mp){stopGame();el.again.hidden=false;el.again.textContent=mp?'Rematch':'Play again';el.home.hidden=true;el.game.hidden=false;el.gname.textContent=game.name.toUpperCase();{const m=document.getElementById('gmeta');if(m)m.textContent=(game._sec?game._sec+' ':'')+'GAME '+String(game._no||GAMES.indexOf(game)+1).padStart(2,'0')+' \u00B7 '+game.cat.toUpperCase()+(mp?' \u00B7 VS FRIEND':diff?' \u00B7 '+diff.toUpperCase():'')}el.help.textContent=mp?game.help.replace(/the computer's/gi,"your friend's").replace(/the computer/gi,'your friend'):game.help;el.slab.textContent=game.sl||'Score';el.score.textContent='0';
   el.sbox.hidden=el.bbox.hidden=!!game.ns;const b=store.get(bestKey(game,diff));el.best.textContent=b==null?'-':b;el.wrap.scrollTop=0;
   if(game.ai&&!diff&&!mp){startMenu(game);return}
